@@ -1,1 +1,3 @@
 This is a example file...for now.
+
+This will be a place to write notes.
