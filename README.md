@@ -11,3 +11,5 @@ the address for these pages is a3tek.tk
 # project00
 random projects
 >>>>>>> 0cbff192e687a30dcba35cd048d596c9e09a0c42
+
+OK i think maybe everythink is working now. 
