@@ -1,0 +1,25 @@
+/*smooth scrolling*/
+html
+{
+scroll-behavior: smooth;
+}
+
+
+
+
+@media (prefers-reduced-motion: reduce)
+/*turns off animaitons and other motion for users that prefer when set in windows or browser*/
+{
+    *,
+    ::before,
+    ::after
+    {
+        animation-delay: -1ms !important;
+        animation-duration: 1ms !important;
+        animation-iteration-count: 1 !important;
+        background-attachment: initial !important;
+        scroll-behavior: auto !important;
+        transition-duration: 0s !important;
+        transition-delay: 0s !important;
+    }
+}
