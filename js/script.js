@@ -25,8 +25,8 @@ let _ok   = false;
 
 function initSupabase() {
   try {
-    if (SUPABASE_URL === 'REPLACE_ME' || SUPABASE_KEY === 'REPLACE_ME')
-    {
+    if (SUPABASE_URL === 'REPLACE_ME' || SUPABASE_KEY === 'REPLACE_ME') 
+     {
       console.warn('Supabase config not set — running in offline-demo mode.');
       return false;
     }
@@ -65,24 +65,23 @@ async function dbGetVisitors() {
 }
 
 async function dbAddVisitor(rec) {
-  if (!_ok) return rec;
+  if (!_ok) return { rec, isNew: false };
   try {
-    // Check if email already exists
-    const { data: existing } = await _db
+    const { error } = await _db
       .from('visitors')
-      .select('*')
-      .eq('email', rec.email)
-      .maybeSingle();
-    if (existing) return existing;
-    // Insert new visitor
-    const { data, error } = await _db
-      .from('visitors')
-      .insert([rec])
-      .select()
-      .single();
-    if (error) throw error;
-    return data;
-  } catch (e) { console.error('addVisitor:', e); return rec; }
+      .insert([rec]);
+
+    if (error) {
+      // 23505 = unique_violation — email already registered, not a real error
+      if (error.code === '23505') return { rec, isNew: false };
+      throw error;
+    }
+    // Insert succeeded — this is a new visitor
+    return { rec, isNew: true };
+  } catch (e) {
+    console.error('addVisitor:', e);
+    return { rec, isNew: false };
+  }
 }
 
 /* POSTS */
@@ -328,8 +327,7 @@ async function registerAndEnter() {
     ts:   Date.now(),
   };
 
-  const saved  = await dbAddVisitor(rec);
-  const isNew  = !saved.created_at || saved.ts === rec.ts;
+  const { rec: saved, isNew } = await dbAddVisitor(rec);
   setSess(saved);
   btn.textContent = 'CONFIRM IDENTITY → ENTER'; btn.disabled = false;
   enterPf(saved, isNew);
@@ -769,7 +767,4 @@ async function saveNewVisitorPassword() {
   }
 }
 
-
 init();
-
-
