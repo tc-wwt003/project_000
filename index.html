@@ -1,42 +1,415 @@
 <!DOCTYPE html>
+
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="Content-Security-Policy"
+  content="default-src 'self';
+           script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net;
+           style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;
+           font-src https://fonts.gstatic.com;
+           img-src 'self' data:;
+           connect-src 'self' https://*.supabase.co wss://*.supabase.co;
+           frame-ancestors 'none';
+           base-uri 'self';
+           form-action 'self';">
+<meta http-equiv="X-Content-Type-Options" content="nosniff">
+<meta http-equiv="Referrer-Policy" content="no-referrer">
+<title>CLASSIFIED :: Portfolio</title>
 
-    <link rel="stylesheet" type="text/css" href="css/style.css">
+<link rel="stylesheet" type="text/css" href="css/style.css">
+<!-- *** <style></style> Add Link to StyleSheet *** !!!DONE!!! -->
 
-    <title>My Web Page</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Syne:wght@300;400;700;800&family=IBM+Plex+Mono:ital,wght@0,300;0,400;1,300&display=swap" rel="stylesheet">
+
+<!-- Supabase JS SDK (UMD build — no bundler required) -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+
 </head>
 <body>
-    <h1>Hello To All!!!</h1>
-    <p>
-        Just getting started on this web site.  Check back to see what I've done.
-        <br>
-        <br>
-        Thanks for stopping by. :)
-        <br>
-        <br>
-        Windows : <a href="url"></a>
-        <br>
-        <br>
-        Macintosh : <a href="url"></a>
-        <br>
-        <br>
-        Linux : <a href="url"></a>
-        <br>
-        <br>
-        <br>
-    </p>
-    <p>
-        Lorem ipsum dolor sit amet, consectetur adipisicing elit.<br>  Repellat cupiditate eveniet possimus nihil?<br>  Fugiat tempore nobis ea iure animi consectetur vero.<br>  Veritatis sapiente eos optio vel consequatur, accusamus minima minus!
-    </p>
-    
-<h1>We are going Back ... Back to the Future!!!</h1>
+
+<!-- ══════════════════════════════════ GATE PAGE ══════════════════════════════════ -->
+<div class="page active" id="gate-page">
+  <div class="gate-grid"></div>
+  <div class="gate-glow"></div>
+  <div class="gate-box">
+    <div style="margin-bottom:32px">
+      <div class="access-badge">Restricted Access</div>
+      <h1 class="gate-title"><span class="dw">ENTER</span><br><span class="cw">ACCESS</span><br>CODE.</h1>
+      <p class="gate-meta">SOC Analyst <span>·</span> Dev <span>·</span> Artist<br><span>// Authorized visitors only</span></p>
+    </div>
+    <div class="divider"></div>
+    <div class="prompt-label">Authentication required</div>
+    <div class="pw-wrap">
+      <input class="pw-input" id="pw-input" type="password" placeholder="Enter password..." autocomplete="current-password" spellcheck="false">
+      <button class="pw-submit" onclick="checkPw()">→</button>
+    </div>
+    <div class="pw-error" id="pw-error"></div>
+    <p class="gate-hint">Contact the site owner for access credentials.</p>
+
+    <div class="vf-section" id="vf-section">
+      <div class="vf-title">Register your visit</div>
+      <div class="vf-row"><label class="vf-label" for="vf-name">Full Name</label><input class="vf-input" id="vf-name" type="text" placeholder="Your name" autocomplete="name"></div>
+      <div class="vf-row"><label class="vf-label" for="vf-email">Email Address</label><input class="vf-input" id="vf-email" type="email" placeholder="you@company.com" autocomplete="email"></div>
+      <div class="vf-row"><label class="vf-label" for="vf-co">Company / Organization</label><input class="vf-input" id="vf-co" type="text" placeholder="Where are you from?" autocomplete="organization"></div>
+      <button class="vf-submit" onclick="registerAndEnter()">CONFIRM IDENTITY → ENTER</button>
+      <span class="ret-link" onclick="skipReg()">Already registered? Skip →</span>
+    </div>
+
+    <div class="vis-counter">
+      <span class="vc-lbl">Registered visitors</span>
+      <span class="vc-num" id="gate-count">—</span>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════ PORTFOLIO PAGE ══════════════════════════════ -->
+<div class="page" id="portfolio-page">
+  <nav class="nav">
+    <div class="nav-left">
+      <div class="nav-status">Live</div>
+      <div class="nav-brand">Raven<span>_</span>Sec</div>
+      <span class="db-badge" id="db-badge" style="display:none">Supabase</span>
+    </div>
+    <div class="tab-bar" style="border:none;padding:0;flex:1;justify-content:center">
+      <button class="tab-btn active" onclick="switchTab('about',this)">About</button>
+      <button class="tab-btn" onclick="switchTab('soc',this)">SOC / Security</button>
+      <button class="tab-btn" onclick="switchTab('dev',this)">Development</button>
+      <button class="tab-btn" onclick="switchTab('art',this)">Art &amp; Design</button>
+      <button class="tab-btn" onclick="switchTab('blog',this)">Blog</button>
+    </div>
+    <div class="nav-right">
+      <div class="nav-user">Session: <strong id="nav-name">—</strong></div>
+      <button class="nav-exit" onclick="exitPf()">⏻ EXIT</button>
+    </div>
+  </nav>
+
+  <!-- ABOUT -->
+  <div class="section visible" id="sec-about">
+    <div class="sec-eye">Introduction</div>
+    <h2 class="sec-title">Who I Am</h2>
+    <p class="sec-sub">A multi-disciplinary professional at the intersection of cybersecurity, software engineering, and visual art.</p>
+    <div class="hero-layout">
+      <div>
+        <div class="hero-bio">
+          <p>I'm a <strong>SOC Analyst</strong> with a passion for threat hunting, incident response, and building the tools that make security operations faster and smarter. I spend my days analyzing alerts, correlating logs, and keeping adversaries out.</p>
+          <p>On the engineering side, I write <strong>security tooling and automation</strong> — from SIEM integrations to internal dashboards — because the best way to solve an operational problem is often to code your way through it.</p>
+          <p>When I step away from the terminal, I create <strong>2D/3D art and animations</strong>. Digital illustration, motion graphics, and world-building are how I recharge. The same attention to detail that makes me a good analyst makes me a careful artist.</p>
+        </div>
+        <div class="hero-metrics">
+          <div class="metric"><div class="mnum">3<span>+</span></div><div class="mlbl">Years SOC</div></div>
+          <div class="metric"><div class="mnum">50<span>k+</span></div><div class="mlbl">Alerts Triaged</div></div>
+          <div class="metric"><div class="mnum">18</div><div class="mlbl">Dev Projects</div></div>
+          <div class="metric"><div class="mnum">40<span>+</span></div><div class="mlbl">Art Pieces</div></div>
+        </div>
+      </div>
+      <div>
+        <div style="font-family:'Share Tech Mono';font-size:9px;letter-spacing:.2em;text-transform:uppercase;color:var(--cyan);margin-bottom:16px">Certifications &amp; Training</div>
+        <ul class="cert-list">
+          <li class="cert-item"><div><div class="cert-name">CompTIA Security+</div><div class="cert-issuer">CompTIA</div></div><div class="cert-status active">Active</div></li>
+          <li class="cert-item"><div><div class="cert-name">CompTIA CySA+</div><div class="cert-issuer">CompTIA</div></div><div class="cert-status active">Active</div></li>
+          <li class="cert-item"><div><div class="cert-name">Splunk Core Certified</div><div class="cert-issuer">Splunk</div></div><div class="cert-status active">Active</div></li>
+          <li class="cert-item"><div><div class="cert-name">CEH — Ethical Hacking</div><div class="cert-issuer">EC-Council</div></div><div class="cert-status prog">In Progress</div></li>
+          <li class="cert-item"><div><div class="cert-name">OSCP</div><div class="cert-issuer">Offensive Security</div></div><div class="cert-status prog">Studying</div></li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- SOC -->
+  <div class="section" id="sec-soc">
+    <div class="sec-eye">Cybersecurity</div>
+    <h2 class="sec-title">SOC Work</h2>
+    <p class="sec-sub">Threat detection, incident response, log analysis, and writing detection rules that actually fire on real threats.</p>
+    <div class="skills-matrix">
+      <div class="skill-group">
+        <div class="sgh"><div class="sgi">🔍</div><div><div class="sgt">Threat Detection</div><div class="sgs">L2 Analyst · SIEM Ops</div></div></div>
+        <div class="skill-row"><div class="skill-top"><span class="skill-name">SIEM / Log Analysis</span><span class="skill-pct">94%</span></div><div class="skill-track"><div class="skill-fill" data-w="94"></div></div></div>
+        <div class="skill-row"><div class="skill-top"><span class="skill-name">Threat Hunting</span><span class="skill-pct">85%</span></div><div class="skill-track"><div class="skill-fill" data-w="85"></div></div></div>
+        <div class="skill-row"><div class="skill-top"><span class="skill-name">Malware Triage</span><span class="skill-pct">80%</span></div><div class="skill-track"><div class="skill-fill" data-w="80"></div></div></div>
+        <div class="skill-row"><div class="skill-top"><span class="skill-name">Sigma / YARA Rules</span><span class="skill-pct">78%</span></div><div class="skill-track"><div class="skill-fill" data-w="78"></div></div></div>
+      </div>
+      <div class="skill-group">
+        <div class="sgh"><div class="sgi">🚨</div><div><div class="sgt">Incident Response</div><div class="sgs">Triage · Containment</div></div></div>
+        <div class="skill-row"><div class="skill-top"><span class="skill-name">IR Playbooks</span><span class="skill-pct">88%</span></div><div class="skill-track"><div class="skill-fill" data-w="88"></div></div></div>
+        <div class="skill-row"><div class="skill-top"><span class="skill-name">Disk / Memory Forensics</span><span class="skill-pct">72%</span></div><div class="skill-track"><div class="skill-fill" data-w="72"></div></div></div>
+        <div class="skill-row"><div class="skill-top"><span class="skill-name">Network Forensics</span><span class="skill-pct">80%</span></div><div class="skill-track"><div class="skill-fill" data-w="80"></div></div></div>
+        <div class="skill-row"><div class="skill-top"><span class="skill-name">Report Writing</span><span class="skill-pct">90%</span></div><div class="skill-track"><div class="skill-fill" data-w="90"></div></div></div>
+      </div>
+      <div class="skill-group">
+        <div class="sgh"><div class="sgi">🛡️</div><div><div class="sgt">Tools &amp; Platforms</div><div class="sgs">SIEM · EDR · Intel</div></div></div>
+        <div class="tool-cloud">
+          <span class="ttag">Splunk</span><span class="ttag">MS Sentinel</span><span class="ttag">CrowdStrike</span>
+          <span class="ttag">Wireshark</span><span class="ttag">Velociraptor</span><span class="ttag">TheHive</span>
+          <span class="ttag">MISP</span><span class="ttag">Nmap</span><span class="ttag">Suricata</span>
+          <span class="ttag">Zeek</span><span class="ttag">VirusTotal</span><span class="ttag">MITRE ATT&amp;CK</span>
+        </div>
+      </div>
+      <div class="skill-group">
+        <div class="sgh"><div class="sgi">⚡</div><div><div class="sgt">Key Achievements</div><div class="sgs">Impact highlights</div></div></div>
+        <div style="font-size:11px;color:var(--dim);line-height:2;letter-spacing:.03em">
+          <div style="color:var(--text);border-bottom:1px solid var(--border);padding:8px 0">Reduced false positives by <span style="color:var(--cyan)">34%</span> via custom Sigma rules</div>
+          <div style="color:var(--text);border-bottom:1px solid var(--border);padding:8px 0">Led response on <span style="color:var(--cyan)">3</span> critical ransomware incidents</div>
+          <div style="color:var(--text);border-bottom:1px solid var(--border);padding:8px 0">Phishing triage: <span style="color:var(--cyan)">2hr → 8min</span> with automation</div>
+          <div style="color:var(--text);padding:8px 0">Mentored <span style="color:var(--cyan)">4</span> L1 analysts through on-call</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- DEV -->
+  <div class="section" id="sec-dev">
+    <div class="sec-eye">Software Engineering</div>
+    <h2 class="sec-title">Development</h2>
+    <p class="sec-sub">Security tooling, automation pipelines, internal dashboards, and the occasional side project that becomes something real.</p>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:40px">
+      <span class="ttag">Python</span><span class="ttag">JavaScript</span><span class="ttag">TypeScript</span>
+      <span class="ttag">Bash</span><span class="ttag">PowerShell</span><span class="ttag">Go</span>
+      <span class="ttag">React</span><span class="ttag">FastAPI</span><span class="ttag">Docker</span>
+      <span class="ttag">PostgreSQL</span><span class="ttag">Redis</span><span class="ttag">Linux</span>
+    </div>
+    <div class="projects-list">
+      <a class="proj-item" href="projects/sentinelflow.html"><div class="proj-year">2024</div><div><div class="proj-name">SentinelFlow</div><div class="proj-desc">SIEM alert enrichment pipeline that auto-correlates IOCs against threat intel feeds, WHOIS, VirusTotal, and Shodan — cutting triage time by 60%.</div><div class="proj-stack"><span class="stag">Python</span><span class="stag">FastAPI</span><span class="stag">Redis</span><span class="stag">MISP API</span></div></div><div class="proj-arrow">→</div></a>
+      <a class="proj-item" href="projects/phishboard.html"><div class="proj-year">2024</div><div><div class="proj-name">PhishBoard</div><div class="proj-desc">Internal dashboard for phishing email triage. Analysts review, tag, and escalate submissions. Integrated with TheHive for case management.</div><div class="proj-stack"><span class="stag">React</span><span class="stag">TypeScript</span><span class="stag">FastAPI</span><span class="stag">Docker</span></div></div><div class="proj-arrow">→</div></a>
+      <a class="proj-item" href="projects/logparser.html"><div class="proj-year">2023</div><div><div class="proj-name">LogParser CLI</div><div class="proj-desc">Command-line tool for rapid Windows Event Log analysis. Bulk parsing, timeline generation, and MITRE ATT&amp;CK mapping output.</div><div class="proj-stack"><span class="stag">Go</span><span class="stag">MITRE ATT&amp;CK</span><span class="stag">CLI</span></div></div><div class="proj-arrow">→</div></a>
+      <a class="proj-item" href="projects/ruleforge.html"><div class="proj-year">2023</div><div><div class="proj-name">RuleForge</div><div class="proj-desc">Web UI for writing, testing, and deploying Sigma detection rules. Live preview engine with version control integration.</div><div class="proj-stack"><span class="stag">Python</span><span class="stag">React</span><span class="stag">Sigma</span><span class="stag">PostgreSQL</span></div></div><div class="proj-arrow">→</div></a>
+    </div>
+  </div>
+
+  <!-- ART -->
+  <div class="section" id="sec-art">
+    <div class="sec-eye">Creative Work</div>
+    <h2 class="sec-title">Art &amp; Design</h2>
+    <p class="sec-sub">Digital illustration, 3D modeling, motion graphics, and character design. The terminal closes, the canvas opens.</p>
+    <p class="art-intro">My art practice sits somewhere between sci-fi concept art and technical illustration — influenced by the same systems thinking I apply to security. I work in Blender, Procreate, and After Effects, drawn to environments, mechanical designs, and anything that rewards close looking.</p>
+    <div class="art-grid">
+      <a class="art-card" href="art/orbital-station.html"><div class="art-ph"><svg viewBox="0 0 200 150"><defs><radialGradient id="ga" cx="50%" cy="50%"><stop offset="0%" stop-color="#00d4ff" stop-opacity=".4"/><stop offset="100%" stop-color="#001a22" stop-opacity=".9"/></radialGradient></defs><rect width="200" height="150" fill="url(#ga)"/><circle cx="100" cy="75" r="50" fill="none" stroke="#00d4ff" stroke-width=".5" stroke-dasharray="4 4"/><polygon points="100,45 115,70 100,85 85,70" fill="none" stroke="#00d4ff" stroke-width=".8"/></svg></div><div class="art-ov"><div class="art-title">Orbital Station</div><div class="art-med">3D · Blender · 2024</div><div class="art-ov-arrow">View →</div></div></a>
+      <a class="art-card" href="art/signal-interrupt.html"><div class="art-ph"><svg viewBox="0 0 200 150"><defs><linearGradient id="gb" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#ff6a2f" stop-opacity=".5"/><stop offset="100%" stop-color="#1a0900"/></linearGradient></defs><rect width="200" height="150" fill="url(#gb)"/><path d="M20,130 L60,40 L100,90 L140,20 L180,100" fill="none" stroke="#ff6a2f" stroke-width="1" stroke-linecap="round"/></svg></div><div class="art-ov"><div class="art-title">Signal Interrupt</div><div class="art-med">Digital Illustration · 2024</div><div class="art-ov-arrow">View →</div></div></a>
+      <a class="art-card" href="art/ghost-protocol-ui.html"><div class="art-ph"><svg viewBox="0 0 200 150"><defs><radialGradient id="gc" cx="30%" cy="70%"><stop offset="0%" stop-color="#39ff8a" stop-opacity=".5"/><stop offset="100%" stop-color="#001508"/></radialGradient></defs><rect width="200" height="150" fill="url(#gc)"/><rect x="50" y="30" width="100" height="90" rx="2" fill="none" stroke="#39ff8a" stroke-width=".8"/><rect x="60" y="40" width="80" height="10" fill="#39ff8a" opacity=".2"/></svg></div><div class="art-ov"><div class="art-title">Ghost Protocol UI</div><div class="art-med">UI / Motion Design · 2023</div><div class="art-ov-arrow">View →</div></div></a>
+      <a class="art-card" href="art/void-walker.html"><div class="art-ph"><svg viewBox="0 0 200 150"><defs><radialGradient id="gd" cx="50%" cy="40%"><stop offset="0%" stop-color="#aa44ff" stop-opacity=".6"/><stop offset="100%" stop-color="#0d0015"/></radialGradient></defs><rect width="200" height="150" fill="url(#gd)"/><ellipse cx="100" cy="75" rx="70" ry="50" fill="none" stroke="#aa44ff" stroke-width=".5"/><circle cx="100" cy="75" r="5" fill="#aa44ff" opacity=".8"/></svg></div><div class="art-ov"><div class="art-title">Void Walker</div><div class="art-med">2D Character Design · 2023</div><div class="art-ov-arrow">View →</div></div></a>
+      <a class="art-card" href="art/network-drift.html"><div class="art-ph"><svg viewBox="0 0 200 150"><defs><linearGradient id="ge" x1="0%" y1="100%" x2="100%" y2="0%"><stop offset="0%" stop-color="#001018"/><stop offset="100%" stop-color="#00d4ff" stop-opacity=".4"/></linearGradient></defs><rect width="200" height="150" fill="url(#ge)"/><path d="M10,120 Q50,20 100,60 Q150,100 190,30" fill="none" stroke="#00d4ff" stroke-width="1.5"/></svg></div><div class="art-ov"><div class="art-title">Network Drift</div><div class="art-med">Motion Graphics · 2024</div><div class="art-ov-arrow">View →</div></div></a>
+      <a class="art-card" href="art/apex-construct.html"><div class="art-ph"><svg viewBox="0 0 200 150"><defs><radialGradient id="gf" cx="60%" cy="40%"><stop offset="0%" stop-color="#ff6a2f" stop-opacity=".5"/><stop offset="100%" stop-color="#120500"/></radialGradient></defs><rect width="200" height="150" fill="url(#gf)"/><polygon points="100,20 160,120 40,120" fill="none" stroke="#ff6a2f" stroke-width=".8"/><polygon points="100,70 120,90 80,90" fill="#ff6a2f" opacity=".2"/></svg></div><div class="art-ov"><div class="art-title">Apex Construct</div><div class="art-med">3D · Blender · 2022</div><div class="art-ov-arrow">View →</div></div></a>
+    </div>
+  </div>
+
+  <!-- BLOG -->
+  <div class="section" id="sec-blog">
+    <div class="sec-eye">Writings &amp; Notes</div>
+    <h2 class="sec-title">Blog</h2>
+    <p class="sec-sub">Threat intel breakdowns, dev notes, art process posts, and the occasional deep-dive.</p>
+    <div id="blog-list-view">
+      <div class="blog-controls">
+        <div class="blog-filters">
+          <button class="bf-btn active" onclick="filterBlog('all',this)">All</button>
+          <button class="bf-btn" onclick="filterBlog('security',this)">Security</button>
+          <button class="bf-btn fdev" onclick="filterBlog('development',this)">Dev</button>
+          <button class="bf-btn fart" onclick="filterBlog('art',this)">Art</button>
+          <button class="bf-btn fgen" onclick="filterBlog('general',this)">General</button>
+        </div>
+        <span class="blog-count" id="blog-count-lbl"></span>
+      </div>
+      <div id="blog-post-list">
+        <div class="blog-empty"><div class="be-icon">◈</div><div class="be-txt">Loading posts...<br><span>Fetching from Supabase</span></div></div>
+      </div>
+    </div>
+    <div id="blog-detail-view" class="post-detail">
+      <button class="pd-back" onclick="closeBlogPost()">Back to all posts</button>
+      <div class="pd-header">
+        <div class="pd-cat" id="pd-cat" style="color:var(--cyan)"></div>
+        <h1 class="pd-title" id="pd-title"></h1>
+        <div class="pd-byline"><span class="pd-date" id="pd-date"></span><span id="pd-tags-byline"></span></div>
+      </div>
+      <div class="pd-body" id="pd-body"></div>
+      <div class="pd-tags-footer" id="pd-tags-footer"></div>
+    </div>
+  </div>
+
+  <footer>
+    <span>© 2025 RavenSec Portfolio — Restricted Access</span>
+    <div style="display:flex;gap:16px;align-items:center;">
+      <span id="sess-lbl">SESSION: —</span>
+      <button class="footer-admin" onclick="openAdminGate()" title="Admin (Ctrl+Shift+A)">[ADMIN]</button>
+    </div>
+  </footer>
+</div>
+
+<!-- ══════════════════════════════ ADMIN GATE MODAL ══════════════════════════════ -->
+<div id="admin-gate">
+  <div class="ag-box">
+    <button class="ag-close" onclick="closeAdminGate()">✕</button>
+    <div class="ag-title">Admin <span>Access</span></div>
+    <p class="ag-sub">Sign in with your Supabase admin account.<br>Create this account in Supabase Console → Authentication → Users.</p>
+    <div class="ag-field">
+      <label class="vf-label" for="ag-email">Admin Email</label>
+      <input id="ag-email" type="email" placeholder="admin@yourdomain.com" autocomplete="email" onkeydown="if(event.key==='Enter')checkAdminPw()">
+    </div>
+    <div class="ag-field">
+      <label class="vf-label" for="ag-pw">Password</label>
+      <input id="ag-pw" type="password" placeholder="Admin password..." autocomplete="current-password" onkeydown="if(event.key==='Enter')checkAdminPw()">
+    </div>
+    <div class="ag-error" id="ag-error"></div>
+    <button class="ag-submit" id="ag-submit-btn" onclick="checkAdminPw()"><span>Sign In →</span></button>
+  </div>
+</div>
+
+<!-- ══════════════════════════════ ADMIN PANEL OVERLAY ══════════════════════════════ -->
+<div id="admin-overlay">
+  <nav class="admin-nav">
+    <div class="admin-brand">
+      <div class="admin-tag">⚡ ADMIN</div>
+      <div class="admin-title-txt">Blog<span>Console</span></div>
+    </div>
+    <div class="admin-nav-right">
+      <span class="admin-user-lbl">Signed in as <span id="admin-email-lbl">—</span></span>
+      <button class="admin-exit-btn" onclick="exitAdmin()">⏻ SIGN OUT</button>
+    </div>
+  </nav>
+  <div class="admin-body">
+    <aside class="admin-sidebar">
+      <div class="admin-sidebar-label">Navigation</div>
+      <div class="admin-sidebar-item active" onclick="adminTab('dashboard',this)"><span class="ai">◈</span> Dashboard</div>
+      <div class="admin-sidebar-item" onclick="adminTab('posts',this)"><span class="ai">▤</span> All Posts</div>
+      <div class="admin-sidebar-item" onclick="adminTab('new',this)"><span class="ai">+</span> New Post</div>
+      <div class="admin-sidebar-divider"></div>
+      <div class="admin-sidebar-label">Data</div>
+      <div class="admin-sidebar-item" onclick="adminTab('visitors',this)"><span class="ai">◉</span> Visitors</div>
+      <div class="admin-sidebar-item" onclick="adminTab('security',this)"><span class="ai">🔐</span> Security</div>
+    </aside>
+    <main class="admin-main">
+
+      <!-- Dashboard -->
+      <div class="admin-panel active" id="admin-panel-dashboard">
+        <div class="admin-panel-hd">
+          <h2>Dashboard</h2>
+          <button class="admin-btn primary" onclick="adminTab('new',null)">+ New Post</button>
+        </div>
+        <div class="admin-stats-grid">
+          <div class="astat"><div class="astat-n cy" id="a-stat-pub">—</div><div class="astat-l">Published</div></div>
+          <div class="astat"><div class="astat-n" id="a-stat-draft">—</div><div class="astat-l">Drafts</div></div>
+          <div class="astat"><div class="astat-n gr" id="a-stat-vis">—</div><div class="astat-l">Visitors</div></div>
+          <div class="astat"><div class="astat-n" id="a-stat-total">—</div><div class="astat-l">Total Posts</div></div>
+        </div>
+        <div style="font-family:'Share Tech Mono';font-size:9px;letter-spacing:.2em;text-transform:uppercase;color:var(--cyan);margin-bottom:16px">Recent Posts</div>
+        <div id="admin-recent-list" class="admin-post-list"></div>
+      </div>
+
+      <!-- All Posts -->
+      <div class="admin-panel" id="admin-panel-posts">
+        <div class="admin-panel-hd">
+          <h2>All Posts</h2>
+          <div style="display:flex;gap:8px;align-items:center">
+            <select id="admin-filter-status" class="pf-select" style="width:auto;font-size:9px;padding:6px 10px;" onchange="renderAdminPostList()">
+              <option value="all">All Status</option>
+              <option value="published">Published</option>
+              <option value="draft">Drafts</option>
+            </select>
+            <button class="admin-btn primary" onclick="adminTab('new',null)">+ New Post</button>
+          </div>
+        </div>
+        <div id="admin-all-posts-list" class="admin-post-list"></div>
+      </div>
+
+      <!-- New / Edit Post -->
+      <div class="admin-panel" id="admin-panel-new">
+        <div class="admin-panel-hd">
+          <h2 id="editor-panel-title">New Post</h2>
+          <div style="display:flex;gap:8px;">
+            <button class="admin-btn ghost" onclick="cancelEdit()">Cancel</button>
+            <button class="admin-btn success" onclick="savePost()">Save Post ↗</button>
+          </div>
+        </div>
+        <form class="post-form" onsubmit="return false">
+          <input type="hidden" id="pf-id">
+          <div class="pf-row"><label class="pf-label">Post Title *</label><input class="pf-input" id="pf-title" type="text" placeholder="Enter a compelling title..."></div>
+          <div class="pf-row-2">
+            <div class="pf-row"><label class="pf-label">Category *</label><select class="pf-select" id="pf-cat"><option value="">Select category...</option><option value="security">Security</option><option value="development">Development</option><option value="art">Art</option><option value="general">General</option></select></div>
+            <div class="pf-row"><label class="pf-label">Tags (comma-separated)</label><input class="pf-input" id="pf-tags" type="text" placeholder="e.g. SIEM, threat-hunting, malware"></div>
+          </div>
+          <div class="pf-row"><label class="pf-label">Excerpt / Summary *</label><input class="pf-input" id="pf-excerpt" type="text" placeholder="Short summary shown in post list..."></div>
+          <div class="pf-row">
+            <label class="pf-label">Post Body *</label>
+            <textarea class="pf-textarea" id="pf-body" placeholder="Write your post...&#10;&#10;## Heading 2&#10;### Heading 3&#10;**bold**  `inline code`&#10;&#96;&#96;&#96;code block&#96;&#96;&#96;&#10;&gt; blockquote&#10;- bullet list"></textarea>
+            <span class="pf-hint">Supports: ## headings, **bold**, `code`, ```blocks```, > quotes, - lists</span>
+          </div>
+          <div class="pf-toggle-row">
+            <label class="pf-toggle"><input type="checkbox" id="pf-published" checked><span class="pf-toggle-slider"></span></label>
+            <span class="pf-toggle-lbl">Publish immediately — <span id="publish-status-lbl">visible to visitors</span></span>
+          </div>
+        </form>
+      </div>
+
+      <!-- Visitors -->
+      <div class="admin-panel" id="admin-panel-visitors">
+        <div class="admin-panel-hd"><h2>Visitor Registry</h2></div>
+        <div class="vtw">
+          <div class="vth"><div class="vth-t">◈ Supabase visitors collection</div><div class="vth-c" id="admin-vis-count"></div></div>
+          <table class="vt">
+            <thead><tr><th>Name</th><th>Email</th><th>Company</th><th>Date</th></tr></thead>
+            <tbody id="admin-vis-tbody"><tr><td colspan="4" style="color:var(--dimmer)">Loading...</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Security -->
+      <div class="admin-panel" id="admin-panel-security">
+        <div class="admin-panel-hd"><h2>Security Settings</h2></div>
+        <div style="max-width:580px;">
+          <div style="border:1px solid var(--border);padding:20px 24px;background:var(--bg2);margin-bottom:32px;">
+            <div style="font-family:'Share Tech Mono';font-size:9px;letter-spacing:.2em;text-transform:uppercase;color:var(--cyan);margin-bottom:10px">// Current Status</div>
+            <div id="sec-panel-status" style="font-size:11px;line-height:1.8;"></div>
+          </div>
+          <div style="font-family:'Share Tech Mono';font-size:9px;letter-spacing:.2em;text-transform:uppercase;color:var(--cyan);margin-bottom:16px">// Change Visitor Gate Password</div>
+          <div class="post-form">
+            <div class="pf-row">
+              <label class="pf-label">New Visitor Password <span style="color:var(--dim)">(min 10 chars)</span></label>
+              <input class="pf-input" id="new-visitor-pw" type="password" placeholder="New visitor gate password..." autocomplete="new-password">
+              <span class="pf-hint">Stored as a PBKDF2-SHA256 hash in Firestore — never in plaintext.</span>
+            </div>
+            <div class="form-actions">
+              <button class="admin-btn primary" onclick="saveNewVisitorPassword()">Hash &amp; Save →</button>
+            </div>
+          </div>
+          <div style="margin-top:36px;border:1px solid var(--border);padding:20px 24px;background:var(--bg2);">
+            <div style="font-family:'Share Tech Mono';font-size:9px;letter-spacing:.2em;text-transform:uppercase;color:var(--cyan);margin-bottom:14px">// Active Protections</div>
+            <div style="display:flex;flex-direction:column;gap:8px;font-family:'Share Tech Mono';font-size:10px;color:var(--dim);letter-spacing:.05em;line-height:1.6;">
+              <div><span style="color:var(--green)">✓</span> Supabase Auth — admin login (server-verified JWT tokens)</div>
+              <div><span style="color:var(--green)">✓</span> Firestore Security Rules — server-enforced access control</div>
+              <div><span style="color:var(--green)">✓</span> PBKDF2-SHA256 visitor gate hashing (250,000 iterations)</div>
+              <div><span style="color:var(--green)">✓</span> Brute-force lockout — 30s / 5m / 1h tiers</div>
+              <div><span style="color:var(--green)">✓</span> Session expiry — visitors 24h · admin managed by Supabase Auth</div>
+              <div><span style="color:var(--green)">✓</span> Content Security Policy meta tag</div>
+              <div><span style="color:var(--green)">✓</span> X-Content-Type-Options: nosniff</div>
+              <div><span style="color:var(--green)">✓</span> Referrer-Policy: no-referrer</div>
+              <div><span style="color:var(--green)">✓</span> Markdown renderer HTML-escapes all content first</div>
+              <div><span style="color:var(--cyan)">ℹ</span> Add HSTS + move CSP to HTTP headers in Netlify _headers file for production</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </main>
+  </div>
+</div>
+
+<!-- Confirm Modal -->
+<div id="confirm-modal">
+  <div class="cm-box">
+    <div class="cm-title">Confirm Delete</div>
+    <p class="cm-body" id="cm-body"></p>
+    <div class="cm-actions">
+      <button class="admin-btn ghost" onclick="closeConfirm()">Cancel</button>
+      <button class="admin-btn danger" id="cm-confirm-btn">Delete</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
 
 
+<script src="js/script.js"></script>
+<!-- *** <script></script> Add Link to JavaScript !!!DONE!!! *** -->
 
-    <script src="js/main.js"></script>
 </body>
 </html>
