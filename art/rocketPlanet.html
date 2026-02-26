@@ -1,0 +1,579 @@
+<!DOCTYPE html>
+<!--
+╔══════════════════════════════════════════════════════════════════════╗
+║  RAVENSEC — ART PAGE TEMPLATE                                        ║
+╠══════════════════════════════════════════════════════════════════════╣
+║                                                                      ║
+║  HOW TO USE                                                          ║
+║  ──────────                                                          ║
+║  1. Copy this file into an /art/ folder next to index.html          ║
+║     e.g.  my-portfolio/                                              ║
+║              index.html                                              ║
+║              art/                                                    ║
+║                orbital-station.html                                  ║
+║                signal-interrupt.html                                 ║
+║                ghost-protocol-ui.html                                ║
+║                void-walker.html                                      ║
+║                network-drift.html                                    ║
+║                apex-construct.html                                   ║
+║                                                                      ║
+║  2. Find every line marked  ← EDIT  and replace with your content   ║
+║                                                                      ║
+║  3. Sections you don't need: delete the block between the           ║
+║     matching  ══ SECTION START ══  /  ══ SECTION END ══  comments   ║
+║                                                                      ║
+║  ADDING REAL IMAGES                                                  ║
+║  ──────────────────                                                  ║
+║  Replace any  <div class="art-placeholder">  block with:            ║
+║    <img src="../assets/your-image.jpg" alt="Description">            ║
+║  Store images in a top-level /assets/ folder.                        ║
+║  Recommended sizes:                                                  ║
+║    Hero image:    1400 × 900px minimum                               ║
+║    Process imgs:  800 × 600px                                        ║
+║                                                                      ║
+║  SECTIONS AVAILABLE                                                  ║
+║  ──────────────────                                                  ║
+║  • Nav (back link + brand — keep this)                               ║
+║  • Hero artwork (large format, full-width)                           ║
+║  • Details strip (medium · software · year · format)                ║
+║  • Concept / artist statement                                        ║
+║  • Process images (optional — show work-in-progress)                ║
+║  • Tools used                                                        ║
+║  • Related works (links to other art pages)                         ║
+║  • Footer (keep this)                                                ║
+║                                                                      ║
+╚══════════════════════════════════════════════════════════════════════╝
+-->
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="X-Content-Type-Options" content="nosniff">
+<meta http-equiv="Referrer-Policy" content="no-referrer">
+
+<!-- ← EDIT: Update title to match your piece -->
+<title>Orbital Station — RavenSec</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Syne:wght@300;400;700;800&family=IBM+Plex+Mono:ital,wght@0,300;0,400;1,300&display=swap" rel="stylesheet">
+
+<style>
+/* ── Design tokens — identical to portfolio ───────────── */
+:root{
+  --bg:#070a0f;--bg2:#0c1018;--panel:#0f1520;
+  --border:#1a2535;--border2:#243040;
+  --text:#c8d8e8;--dim:#4a6070;--dimmer:#1e2d3a;
+  --cyan:#00d4ff;--cyan-dim:rgba(0,212,255,.08);--cyan-mid:rgba(0,212,255,.18);
+  --orange:#ff6a2f;--green:#39ff8a;--red:#ff3355;
+  --amber:#ffb020;--purple:#aa44ff;
+  --scan:rgba(0,212,255,.015);
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+html{scroll-behavior:smooth;}
+body{
+  background:var(--bg);color:var(--text);
+  font-family:'IBM Plex Mono',monospace;
+  min-height:100vh;overflow-x:hidden;
+}
+
+/* Scanline overlay */
+body::after{
+  content:'';position:fixed;inset:0;pointer-events:none;z-index:9999;
+  background:repeating-linear-gradient(
+    0deg,transparent 0px,transparent 2px,
+    var(--scan) 2px,var(--scan) 4px
+  );
+}
+/* Noise texture */
+body::before{
+  content:'';position:fixed;inset:0;pointer-events:none;z-index:9998;opacity:.35;
+  background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.05'/%3E%3C/svg%3E");
+}
+
+/* ── Page entry animation ─────────────────────────────── */
+@keyframes fadein{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+
+/* ── Nav ──────────────────────────────────────────────── */
+.nav{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:16px 64px;border-bottom:1px solid var(--border);
+  position:sticky;top:0;z-index:200;
+  background:rgba(7,10,15,.92);backdrop-filter:blur(16px);
+}
+.nav-back{
+  display:flex;align-items:center;gap:10px;
+  font-family:'Share Tech Mono';font-size:10px;letter-spacing:.15em;
+  text-transform:uppercase;color:var(--dim);text-decoration:none;
+  transition:color .2s;
+}
+.nav-back::before{content:'←';font-size:14px;transition:transform .2s;}
+.nav-back:hover{color:var(--cyan);}
+.nav-back:hover::before{transform:translateX(-4px);}
+.nav-brand{font-family:'Syne';font-size:18px;font-weight:800;color:var(--text);letter-spacing:-.02em;text-decoration:none;}
+.nav-brand span{color:var(--cyan);}
+.nav-section{font-family:'Share Tech Mono';font-size:9px;letter-spacing:.2em;text-transform:uppercase;color:var(--dimmer);}
+
+/* ── Hero artwork frame ───────────────────────────────── */
+.artwork-hero{
+  width:100%;max-height:80vh;
+  background:var(--bg2);border-bottom:1px solid var(--border);
+  display:flex;align-items:center;justify-content:center;
+  overflow:hidden;position:relative;
+  animation:fadein .5s ease both;
+}
+.artwork-hero img{
+  width:100%;max-height:80vh;object-fit:contain;
+  display:block;
+}
+/* Placeholder shown when no real image is available yet */
+.art-placeholder{
+  width:100%;aspect-ratio:16/9;max-height:70vh;
+  display:flex;align-items:center;justify-content:center;
+  background:var(--bg2);position:relative;overflow:hidden;
+}
+.art-placeholder svg{width:100%;height:100%;display:block;}
+.art-placeholder-label{
+  position:absolute;bottom:20px;left:50%;transform:translateX(-50%);
+  font-family:'Share Tech Mono';font-size:8px;letter-spacing:.2em;
+  text-transform:uppercase;color:var(--dimmer);white-space:nowrap;
+}
+
+/* ── Details strip ────────────────────────────────────── */
+.details-strip{
+  display:flex;align-items:stretch;
+  border-bottom:1px solid var(--border);
+  background:var(--bg2);
+  animation:fadein .5s .1s ease both;
+}
+.detail-cell{
+  flex:1;padding:20px 32px;
+  border-right:1px solid var(--border);
+}
+.detail-cell:last-child{border-right:none;}
+.detail-label{
+  font-family:'Share Tech Mono';font-size:8px;letter-spacing:.2em;
+  text-transform:uppercase;color:var(--dim);margin-bottom:6px;
+}
+.detail-value{
+  font-family:'Syne';font-size:16px;font-weight:700;
+  color:var(--text);letter-spacing:-.01em;
+}
+.detail-value.cy{color:var(--cyan);}
+.detail-value.gr{color:var(--green);}
+.detail-value.or{color:var(--orange);}
+.detail-value.pu{color:var(--purple);}
+
+/* ── Main layout ──────────────────────────────────────── */
+main{max-width:960px;margin:0 auto;padding:64px 64px 96px;}
+
+/* ── Eyebrow label ────────────────────────────────────── */
+.eyebrow{
+  font-family:'Share Tech Mono';font-size:9px;letter-spacing:.25em;
+  text-transform:uppercase;color:var(--cyan);
+  display:flex;align-items:center;gap:10px;margin-bottom:14px;
+}
+.eyebrow::before{content:'';width:24px;height:1px;background:var(--cyan);}
+
+/* ── Section titles ───────────────────────────────────── */
+.sec-title{
+  font-family:'Syne';font-size:clamp(24px,3.5vw,36px);font-weight:800;
+  letter-spacing:-.03em;line-height:1.05;color:var(--text);margin-bottom:8px;
+}
+
+/* ── Section wrapper ──────────────────────────────────── */
+.section{margin-bottom:56px;animation:fadein .4s ease both;}
+
+/* ── Divider ──────────────────────────────────────────── */
+.divider{height:1px;background:linear-gradient(90deg,var(--border2),transparent);margin:56px 0;}
+
+/* ── Body prose ───────────────────────────────────────── */
+.prose{font-size:13px;color:var(--dim);line-height:2;letter-spacing:.03em;max-width:720px;}
+.prose p{margin-bottom:20px;}
+.prose p:last-child{margin-bottom:0;}
+.prose strong{color:var(--text);font-weight:400;}
+
+/* ── Process image grid ───────────────────────────────── */
+.process-grid{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:2px;background:var(--border);
+  border:1px solid var(--border);
+}
+.process-cell{
+  background:var(--bg2);position:relative;
+  overflow:hidden;aspect-ratio:4/3;
+  display:flex;align-items:center;justify-content:center;
+}
+.process-cell img{width:100%;height:100%;object-fit:cover;display:block;}
+.process-cell-ph{
+  display:flex;flex-direction:column;align-items:center;gap:8px;
+  font-family:'Share Tech Mono';font-size:8px;color:var(--dimmer);
+  letter-spacing:.1em;text-transform:uppercase;padding:12px;text-align:center;
+}
+.process-cell-ph svg{opacity:.15;}
+.process-caption{
+  position:absolute;bottom:0;left:0;right:0;
+  padding:8px 12px;
+  background:linear-gradient(transparent,rgba(7,10,15,.9));
+  font-family:'Share Tech Mono';font-size:8px;
+  color:var(--dim);letter-spacing:.1em;
+}
+
+/* ── Tools grid ───────────────────────────────────────── */
+.tools-grid{
+  display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));
+  gap:1px;background:var(--border);border:1px solid var(--border);
+}
+.tool-cell{
+  background:var(--bg2);padding:20px;
+  display:flex;flex-direction:column;gap:6px;
+  transition:background .15s;
+}
+.tool-cell:hover{background:var(--panel);}
+.tool-icon{font-size:20px;line-height:1;}
+.tool-name{font-family:'Syne';font-size:13px;font-weight:700;color:var(--text);}
+.tool-role{font-family:'Share Tech Mono';font-size:8px;color:var(--dim);letter-spacing:.1em;text-transform:uppercase;}
+
+/* ── Related works row ────────────────────────────────── */
+.related-grid{
+  display:grid;grid-template-columns:repeat(3,1fr);
+  gap:2px;background:var(--border);border:1px solid var(--border);
+}
+.related-card{
+  background:var(--bg2);aspect-ratio:4/3;
+  position:relative;overflow:hidden;
+  display:flex;align-items:center;justify-content:center;
+  text-decoration:none;color:inherit;
+  transition:background .2s;
+}
+.related-card:hover{background:var(--panel);}
+.related-card-ph{width:100%;height:100%;display:flex;align-items:center;justify-content:center;}
+.related-card-ph svg{width:80%;height:80%;opacity:.4;}
+.related-card-info{
+  position:absolute;inset:0;
+  background:rgba(7,10,15,.8);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;
+  opacity:0;transition:opacity .2s;padding:12px;
+}
+.related-card:hover .related-card-info{opacity:1;}
+.related-card-title{font-family:'Syne';font-size:13px;font-weight:700;color:var(--text);text-align:center;}
+.related-card-med{font-family:'Share Tech Mono';font-size:7px;color:var(--cyan);letter-spacing:.2em;text-transform:uppercase;}
+
+/* ── Footer ───────────────────────────────────────────── */
+footer{
+  padding:24px 64px;border-top:1px solid var(--border);
+  display:flex;justify-content:space-between;align-items:center;
+}
+footer span{font-family:'Share Tech Mono';font-size:9px;color:var(--dimmer);letter-spacing:.1em;}
+footer a{color:var(--dim);font-family:'Share Tech Mono';font-size:9px;letter-spacing:.1em;text-decoration:none;transition:color .2s;}
+footer a:hover{color:var(--cyan);}
+
+/* ── Responsive ───────────────────────────────────────── */
+@media(max-width:768px){
+  .nav,.details-strip,footer{padding-left:24px;padding-right:24px;}
+  main{padding:40px 24px 72px;}
+  .details-strip{flex-wrap:wrap;}
+  .detail-cell{flex:1 1 50%;border-bottom:1px solid var(--border);}
+  .process-grid{grid-template-columns:1fr 1fr;}
+  .related-grid{grid-template-columns:1fr 1fr;}
+}
+@media(max-width:480px){
+  .detail-cell{flex:1 1 100%;}
+  .process-grid,.related-grid{grid-template-columns:1fr;}
+}
+</style>
+</head>
+<body>
+
+<!-- ══════════════════════════════ NAV ══════════════════════════════ -->
+<nav class="nav">
+  <a class="nav-back" href="../index.html">Portfolio</a>
+  <a class="nav-brand" href="../index.html">Raven<span>_</span>Sec</a>
+  <span class="nav-section">Art &amp; Design</span>
+</nav>
+
+
+<!-- ════════════════ SECTION: HERO ARTWORK — required ════════════════ -->
+<!--
+  Option A — Real image (recommended):
+    Replace the entire .art-placeholder div with:
+    <img src="../assets/orbital-station.jpg" alt="Orbital Station">
+
+  Option B — Keep the placeholder SVG until you have a final render:
+    Edit the SVG inside .art-placeholder to match your piece's palette.
+    The placeholder below matches "Orbital Station" (cyan radial theme).
+    Copy the matching SVG from your art card in index.html if you like.
+-->
+<div class="artwork-hero">
+  <div class="art-placeholder">
+
+    <!-- ← EDIT or REPLACE: your hero image / placeholder SVG -->
+    <svg viewBox="0 0 1400 900" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid slice">
+      <defs>
+        <radialGradient id="hero-grad" cx="50%" cy="50%" r="60%">
+          <stop offset="0%"   stop-color="#00d4ff" stop-opacity=".25"/>
+          <stop offset="60%"  stop-color="#001a22" stop-opacity=".8"/>
+          <stop offset="100%" stop-color="#070a0f" stop-opacity="1"/>
+        </radialGradient>
+      </defs>
+      <rect width="1400" height="900" fill="#070a0f"/>
+      <rect width="1400" height="900" fill="url(#hero-grad)"/>
+
+      <!-- Outer orbit ring -->
+      <circle cx="700" cy="450" r="300" fill="none" stroke="#00d4ff" stroke-width="1"
+              stroke-dasharray="8 6" opacity=".3"/>
+      <!-- Mid orbit ring -->
+      <circle cx="700" cy="450" r="180" fill="none" stroke="#00d4ff" stroke-width=".5"
+              stroke-dasharray="4 4" opacity=".25"/>
+      <!-- Station body -->
+      <polygon points="700,330 760,420 700,480 640,420"
+               fill="none" stroke="#00d4ff" stroke-width="1.5" opacity=".7"/>
+      <!-- Solar panels -->
+      <rect x="580" y="405" width="100" height="30" rx="2"
+            fill="none" stroke="#00d4ff" stroke-width=".8" opacity=".5"/>
+      <rect x="720" y="405" width="100" height="30" rx="2"
+            fill="none" stroke="#00d4ff" stroke-width=".8" opacity=".5"/>
+      <!-- Glow dot -->
+      <circle cx="700" cy="450" r="6" fill="#00d4ff" opacity=".6"/>
+      <circle cx="700" cy="450" r="20" fill="none" stroke="#00d4ff"
+              stroke-width=".5" opacity=".3"/>
+      <!-- Grid lines -->
+      <line x1="0" y1="450" x2="1400" y2="450"
+            stroke="#00d4ff" stroke-width=".3" opacity=".08"/>
+      <line x1="700" y1="0" x2="700" y2="900"
+            stroke="#00d4ff" stroke-width=".3" opacity=".08"/>
+    </svg>
+
+    <span class="art-placeholder-label">Final render — replace this placeholder with your image</span>
+  </div>
+</div>
+<!-- ════════════════ SECTION END: HERO ARTWORK ════════════════ -->
+
+
+<!-- ════════════════ SECTION: DETAILS STRIP — required ════════════════ -->
+<div class="details-strip">
+
+  <div class="detail-cell">
+    <div class="detail-label">Title</div>
+    <div class="detail-value">Orbital Station</div>  <!-- ← EDIT -->
+  </div>
+
+  <div class="detail-cell">
+    <div class="detail-label">Medium</div>
+    <div class="detail-value cy">3D Render</div>  <!-- ← EDIT. Colour: .cy .gr .or .pu or remove class -->
+  </div>
+
+  <div class="detail-cell">
+    <div class="detail-label">Software</div>
+    <div class="detail-value">Blender 4.0</div>  <!-- ← EDIT -->
+  </div>
+
+  <div class="detail-cell">
+    <div class="detail-label">Year</div>
+    <div class="detail-value">2024</div>  <!-- ← EDIT -->
+  </div>
+
+  <!-- ← EDIT or DELETE: add a 5th cell for format/dimensions/duration if relevant -->
+  <div class="detail-cell">
+    <div class="detail-label">Format</div>
+    <div class="detail-value">4K Still</div>  <!-- e.g. 3840 × 2160 · Still / 10s Loop / Print -->
+  </div>
+
+</div>
+<!-- ════════════════ SECTION END: DETAILS STRIP ════════════════ -->
+
+
+<!-- ══════════════════════════════ MAIN ══════════════════════════════ -->
+<main>
+
+  <!-- ════════════════ SECTION: CONCEPT — recommended ════════════════ -->
+  <div class="section">
+    <div class="eyebrow">Concept</div>  <!-- ← EDIT: section label -->
+    <h2 class="sec-title">The idea behind it</h2>  <!-- ← EDIT: heading -->
+    <div class="divider" style="margin:20px 0 28px;"></div>
+    <div class="prose">
+
+      <!-- ← EDIT: your artist statement / concept notes -->
+      <p>
+        <strong>Orbital Station</strong> started as a study in geometric stillness — the idea
+        that an object in perpetual motion can appear completely frozen from the right
+        vantage point. The station sits in the visual centre, held in place by the
+        implied physics of its own orbit rings.
+      </p>
+      <p>
+        The limited palette — cyan against near-black — is a deliberate constraint.
+        Stripping the scene to a single hue forces everything into the geometry.
+        No texture maps, no HDRI sky, no surface shaders beyond an emission value
+        on the wireframe. Just structure.
+      </p>
+      <p>
+        The dashed orbit rings reference the kind of schematic illustrations you'd
+        find in 1970s aerospace manuals — a nod to the era when the visual language
+        of space was still being invented.
+      </p>
+
+    </div>
+  </div>
+  <!-- ════════════════ SECTION END: CONCEPT ════════════════ -->
+
+
+  <!-- ════════════════ SECTION: PROCESS — optional ════════════════ -->
+  <!-- Delete this entire block if you have no process images to show -->
+  <div class="section">
+    <div class="eyebrow">Process</div>
+    <h2 class="sec-title">How it was made</h2>
+    <div class="divider" style="margin:20px 0 28px;"></div>
+
+    <div class="process-grid">
+
+      <!-- ← EDIT: Replace .process-cell-ph blocks with real <img> tags
+           when you have screenshots / renders / sketches.
+           <img src="../assets/orbital-station-step1.jpg" alt="Blockout"> -->
+
+      <div class="process-cell">
+        <div class="process-cell-ph">
+          <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1">
+            <rect x="3" y="3" width="18" height="18" rx="1"/>
+            <circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/>
+          </svg>
+          <span>Blockout / rough</span>  <!-- ← EDIT -->
+        </div>
+        <div class="process-caption">01 — Initial blockout</div>  <!-- ← EDIT -->
+      </div>
+
+      <div class="process-cell">
+        <div class="process-cell-ph">
+          <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1">
+            <rect x="3" y="3" width="18" height="18" rx="1"/>
+            <circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/>
+          </svg>
+          <span>Wireframe pass</span>  <!-- ← EDIT -->
+        </div>
+        <div class="process-caption">02 — Wireframe modelling</div>  <!-- ← EDIT -->
+      </div>
+
+      <div class="process-cell">
+        <div class="process-cell-ph">
+          <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1">
+            <rect x="3" y="3" width="18" height="18" rx="1"/>
+            <circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/>
+          </svg>
+          <span>Final lighting</span>  <!-- ← EDIT -->
+        </div>
+        <div class="process-caption">03 — Lighting &amp; composite</div>  <!-- ← EDIT -->
+      </div>
+
+    </div>
+  </div>
+  <!-- ════════════════ SECTION END: PROCESS ════════════════ -->
+
+
+  <!-- ════════════════ SECTION: TOOLS — optional ════════════════ -->
+  <!-- Delete if you don't want to list tools -->
+  <div class="section">
+    <div class="eyebrow">Tools</div>
+    <h2 class="sec-title">Made with</h2>
+    <div class="divider" style="margin:20px 0 28px;"></div>
+
+    <!-- ← EDIT: add/remove tool cells as needed -->
+    <div class="tools-grid">
+
+      <div class="tool-cell">
+        <div class="tool-icon">🧊</div>
+        <div class="tool-name">Blender 4.0</div>
+        <div class="tool-role">Modelling · Render</div>
+      </div>
+
+      <div class="tool-cell">
+        <div class="tool-icon">✏️</div>
+        <div class="tool-name">Procreate</div>
+        <div class="tool-role">Concept sketches</div>
+      </div>
+
+      <div class="tool-cell">
+        <div class="tool-icon">🎨</div>
+        <div class="tool-name">Photoshop</div>
+        <div class="tool-role">Post-processing</div>
+      </div>
+
+      <div class="tool-cell">
+        <div class="tool-icon">🔢</div>
+        <div class="tool-name">Cycles X</div>
+        <div class="tool-role">Render engine</div>
+      </div>
+
+    </div>
+  </div>
+  <!-- ════════════════ SECTION END: TOOLS ════════════════ -->
+
+
+  <!-- ════════════════ SECTION: RELATED WORKS — optional ════════════════ -->
+  <!-- Delete if no related works yet, or link to other art pages -->
+  <div class="section">
+    <div class="eyebrow">More Work</div>
+    <h2 class="sec-title">Related pieces</h2>
+    <div class="divider" style="margin:20px 0 28px;"></div>
+
+    <!-- ← EDIT: update hrefs, titles, mediums, and SVG thumbnails.
+         Copy SVG from the matching art card in index.html for consistency. -->
+    <div class="related-grid">
+
+      <a class="related-card" href="void-walker.html">
+        <div class="related-card-ph">
+          <svg viewBox="0 0 200 150" xmlns="http://www.w3.org/2000/svg">
+            <defs><radialGradient id="rg1" cx="50%" cy="40%"><stop offset="0%" stop-color="#aa44ff" stop-opacity=".6"/><stop offset="100%" stop-color="#0d0015"/></radialGradient></defs>
+            <rect width="200" height="150" fill="url(#rg1)"/>
+            <ellipse cx="100" cy="75" rx="70" ry="50" fill="none" stroke="#aa44ff" stroke-width=".5"/>
+            <circle cx="100" cy="75" r="5" fill="#aa44ff" opacity=".8"/>
+          </svg>
+        </div>
+        <div class="related-card-info">
+          <div class="related-card-title">Void Walker</div>
+          <div class="related-card-med">2D Character Design · 2023</div>
+        </div>
+      </a>
+
+      <a class="related-card" href="apex-construct.html">
+        <div class="related-card-ph">
+          <svg viewBox="0 0 200 150" xmlns="http://www.w3.org/2000/svg">
+            <defs><radialGradient id="rg2" cx="60%" cy="40%"><stop offset="0%" stop-color="#ff6a2f" stop-opacity=".5"/><stop offset="100%" stop-color="#120500"/></radialGradient></defs>
+            <rect width="200" height="150" fill="url(#rg2)"/>
+            <polygon points="100,20 160,120 40,120" fill="none" stroke="#ff6a2f" stroke-width=".8"/>
+            <polygon points="100,70 120,90 80,90" fill="#ff6a2f" opacity=".2"/>
+          </svg>
+        </div>
+        <div class="related-card-info">
+          <div class="related-card-title">Apex Construct</div>
+          <div class="related-card-med">3D · Blender · 2022</div>
+        </div>
+      </a>
+
+      <a class="related-card" href="network-drift.html">
+        <div class="related-card-ph">
+          <svg viewBox="0 0 200 150" xmlns="http://www.w3.org/2000/svg">
+            <defs><linearGradient id="rg3" x1="0%" y1="100%" x2="100%" y2="0%"><stop offset="0%" stop-color="#001018"/><stop offset="100%" stop-color="#00d4ff" stop-opacity=".4"/></linearGradient></defs>
+            <rect width="200" height="150" fill="url(#rg3)"/>
+            <path d="M10,120 Q50,20 100,60 Q150,100 190,30" fill="none" stroke="#00d4ff" stroke-width="1.5"/>
+          </svg>
+        </div>
+        <div class="related-card-info">
+          <div class="related-card-title">Network Drift</div>
+          <div class="related-card-med">Motion Graphics · 2024</div>
+        </div>
+      </a>
+
+    </div>
+  </div>
+  <!-- ════════════════ SECTION END: RELATED WORKS ════════════════ -->
+
+</main>
+
+
+<!-- ════════════════════════════════ FOOTER ════════════════════════════════ -->
+<footer>
+  <span>© 2025 RavenSec</span>  <!-- ← EDIT: year/name -->
+  <a href="../index.html">← Back to Portfolio</a>
+</footer>
+
+</body>
+</html>

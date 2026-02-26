@@ -1,0 +1,610 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="X-Content-Type-Options" content="nosniff">
+<meta http-equiv="Referrer-Policy" content="no-referrer">
+
+<!-- ← EDIT: Update title to match your project -->
+<title>helloWorld — RavenSec</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Syne:wght@300;400;700;800&family=IBM+Plex+Mono:ital,wght@0,300;0,400;1,300&display=swap" rel="stylesheet">
+
+<style>
+/* ── Design tokens — identical to portfolio ───────────── */
+:root{
+  --bg:#070a0f;--bg2:#0c1018;--panel:#0f1520;
+  --border:#1a2535;--border2:#243040;
+  --text:#c8d8e8;--dim:#4a6070;--dimmer:#1e2d3a;
+  --cyan:#00d4ff;--cyan-dim:rgba(0,212,255,.08);--cyan-mid:rgba(0,212,255,.18);
+  --orange:#ff6a2f;--green:#39ff8a;--red:#ff3355;
+  --amber:#ffb020;--purple:#aa44ff;
+  --scan:rgba(0,212,255,.015);
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+html{scroll-behavior:smooth;}
+body{
+  background:var(--bg);color:var(--text);
+  font-family:'IBM Plex Mono',monospace;
+  min-height:100vh;overflow-x:hidden;
+}
+
+/* Scanline overlay */
+body::after{
+  content:'';position:fixed;inset:0;pointer-events:none;z-index:9999;
+  background:repeating-linear-gradient(
+    0deg,transparent 0px,transparent 2px,
+    var(--scan) 2px,var(--scan) 4px
+  );
+}
+/* Noise texture */
+body::before{
+  content:'';position:fixed;inset:0;pointer-events:none;z-index:9998;opacity:.35;
+  background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.05'/%3E%3C/svg%3E");
+}
+
+/* ── Page entry animation ─────────────────────────────── */
+@keyframes fadein{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:0}}
+
+/* ── Nav ──────────────────────────────────────────────── */
+.nav{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:16px 64px;border-bottom:1px solid var(--border);
+  position:sticky;top:0;z-index:200;
+  background:rgba(7,10,15,.92);backdrop-filter:blur(16px);
+}
+.nav-back{
+  display:flex;align-items:center;gap:10px;
+  font-family:'Share Tech Mono';font-size:10px;letter-spacing:.15em;
+  text-transform:uppercase;color:var(--dim);text-decoration:none;
+  transition:color .2s;
+}
+.nav-back::before{content:'←';font-size:14px;transition:transform .2s;}
+.nav-back:hover{color:var(--cyan);}
+.nav-back:hover::before{transform:translateX(-4px);}
+.nav-brand{font-family:'Syne';font-size:18px;font-weight:800;color:var(--text);letter-spacing:-.02em;text-decoration:none;}
+.nav-brand span{color:var(--cyan);}
+.nav-section{font-family:'Share Tech Mono';font-size:9px;letter-spacing:.2em;text-transform:uppercase;color:var(--dimmer);}
+
+/* ── Main layout ──────────────────────────────────────── */
+main{max-width:960px;margin:0 auto;padding:64px 64px 96px;}
+
+/* ── Eyebrow label ────────────────────────────────────── */
+.eyebrow{
+  font-family:'Share Tech Mono';font-size:9px;letter-spacing:.25em;
+  text-transform:uppercase;color:var(--cyan);
+  display:flex;align-items:center;gap:10px;margin-bottom:14px;
+}
+.eyebrow::before{content:'';width:24px;height:1px;background:var(--cyan);}
+
+/* ── Section titles ───────────────────────────────────── */
+.sec-title{
+  font-family:'Syne';font-size:clamp(28px,4vw,40px);font-weight:800;
+  letter-spacing:-.03em;line-height:1.05;color:var(--text);margin-bottom:8px;
+}
+.sec-sub{font-size:11px;color:var(--dim);letter-spacing:.04em;line-height:1.8;max-width:600px;}
+
+/* ── Divider ──────────────────────────────────────────── */
+.divider{height:1px;background:linear-gradient(90deg,var(--border2),transparent);margin:56px 0;}
+
+/* ── Section wrapper ──────────────────────────────────── */
+.section{margin-bottom:56px;animation:fadein .4s ease both;}
+
+/* ── HERO SECTION ─────────────────────────────────────── */
+.hero{padding:56px 0 0;animation:fadein .5s ease both;}
+.hero-meta{
+  display:flex;align-items:center;gap:12px;
+  font-family:'Share Tech Mono';font-size:9px;letter-spacing:.15em;
+  text-transform:uppercase;color:var(--dimmer);margin-bottom:20px;
+}
+.hero-status{
+  display:flex;align-items:center;gap:6px;
+  padding:3px 10px;border:1px solid;font-size:8px;letter-spacing:.15em;
+}
+.hero-status.active{border-color:rgba(57,255,138,.3);color:var(--green);}
+.hero-status.active::before{content:'';width:5px;height:5px;background:var(--green);border-radius:50%;animation:blink 2s ease-in-out infinite;}
+.hero-status.archived{border-color:var(--border2);color:var(--dimmer);}
+.hero-status.wip{border-color:rgba(255,176,32,.3);color:var(--amber);}
+.hero-title{
+  font-family:'Syne';font-size:clamp(40px,7vw,64px);font-weight:800;
+  letter-spacing:-.04em;line-height:.95;color:var(--text);margin-bottom:16px;
+}
+.hero-title span{color:var(--cyan);}
+.hero-tagline{
+  font-family:'IBM Plex Mono';font-size:13px;color:var(--dim);
+  letter-spacing:.03em;line-height:1.8;max-width:620px;margin-bottom:28px;
+  font-style:italic;
+}
+.hero-tags{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:40px;}
+.htag{
+  font-family:'Share Tech Mono';font-size:9px;letter-spacing:.12em;
+  text-transform:uppercase;padding:5px 12px;border:1px solid var(--border2);
+  color:var(--dim);transition:all .2s;cursor:default;
+}
+.htag:hover{border-color:var(--cyan);color:var(--cyan);background:var(--cyan-dim);}
+
+/* ── Stats bar ────────────────────────────────────────── */
+.stats-bar{
+  display:grid;grid-template-columns:repeat(4,1fr);
+  gap:1px;background:var(--border);border:1px solid var(--border);
+  margin-bottom:64px;
+}
+.stat-cell{background:var(--bg2);padding:20px 24px;}
+.stat-n{
+  font-family:'Syne';font-size:32px;font-weight:800;
+  color:var(--text);line-height:1;
+}
+.stat-n.cy{color:var(--cyan);}
+.stat-n.gr{color:var(--green);}
+.stat-n.am{color:var(--amber);}
+.stat-l{
+  font-family:'Share Tech Mono';font-size:8px;color:var(--dim);
+  letter-spacing:.15em;text-transform:uppercase;margin-top:6px;
+}
+
+/* ── Body prose ───────────────────────────────────────── */
+.prose{font-size:13px;color:var(--dim);line-height:2;letter-spacing:.03em;max-width:720px;}
+.prose p{margin-bottom:20px;}
+.prose p:last-child{margin-bottom:0;}
+.prose strong{color:var(--text);font-weight:400;}
+.prose a{color:var(--cyan);text-decoration:underline;text-underline-offset:3px;transition:opacity .2s;}
+.prose a:hover{opacity:.7;}
+
+/* ── Code block ───────────────────────────────────────── */
+.code-wrap{margin:32px 0;}
+.code-header{
+  display:flex;justify-content:space-between;align-items:center;
+  padding:10px 20px;background:var(--panel);border:1px solid var(--border);
+  border-bottom:none;
+}
+.code-lang{
+  font-family:'Share Tech Mono';font-size:8px;letter-spacing:.2em;
+  text-transform:uppercase;color:var(--cyan);
+}
+.code-file{font-family:'Share Tech Mono';font-size:8px;color:var(--dimmer);letter-spacing:.05em;}
+pre.code-block{
+  background:var(--panel);border:1px solid var(--border);
+  border-left:2px solid var(--cyan);padding:20px 24px;
+  overflow-x:auto;
+}
+pre.code-block code{
+  font-family:'IBM Plex Mono',monospace;font-size:11px;
+  color:var(--text);line-height:1.8;
+}
+/* Simple syntax tint classes — apply manually or skip */
+.kw{color:var(--cyan);}
+.fn{color:#7dd3fc;}
+.str{color:var(--green);}
+.cm{color:var(--dim);font-style:italic;}
+.num{color:var(--amber);}
+
+/* ── Feature list ─────────────────────────────────────── */
+.feature-list{display:flex;flex-direction:column;gap:1px;background:var(--border);border:1px solid var(--border);}
+.feature-item{
+  display:grid;grid-template-columns:56px 1fr;gap:0;
+  background:var(--bg2);transition:background .15s;
+}
+.feature-item:hover{background:var(--panel);}
+.fi-icon{
+  display:flex;align-items:center;justify-content:center;
+  font-size:18px;padding:20px;border-right:1px solid var(--border);
+  background:var(--panel);
+}
+.fi-body{padding:16px 20px;}
+.fi-title{font-family:'Syne';font-size:15px;font-weight:700;color:var(--text);letter-spacing:-.01em;margin-bottom:4px;}
+.fi-desc{font-size:11px;color:var(--dim);line-height:1.7;letter-spacing:.03em;}
+
+/* ── Tech stack grid ──────────────────────────────────── */
+.tech-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+.tech-group{border:1px solid var(--border);padding:20px 24px;background:var(--bg2);}
+.tech-group-label{
+  font-family:'Share Tech Mono';font-size:8px;letter-spacing:.2em;
+  text-transform:uppercase;color:var(--cyan);margin-bottom:14px;
+  display:flex;align-items:center;gap:8px;
+}
+.tech-group-label::before{content:'◈';font-size:10px;}
+.tech-tags{display:flex;flex-wrap:wrap;gap:6px;}
+.ttag{
+  font-family:'Share Tech Mono';font-size:9px;letter-spacing:.1em;
+  text-transform:uppercase;padding:4px 10px;border:1px solid var(--border2);
+  color:var(--dim);transition:all .2s;cursor:default;
+}
+.ttag:hover{border-color:var(--cyan);color:var(--cyan);background:var(--cyan-dim);}
+
+/* ── Screenshots ──────────────────────────────────────── */
+.screenshot-grid{display:grid;grid-template-columns:1fr 1fr;gap:2px;background:var(--border);}
+.screenshot{
+  background:var(--bg2);aspect-ratio:16/9;
+  display:flex;align-items:center;justify-content:center;
+  position:relative;overflow:hidden;cursor:pointer;
+}
+.screenshot img{width:100%;height:100%;object-fit:cover;display:block;}
+.screenshot-ph{
+  display:flex;flex-direction:column;align-items:center;gap:8px;
+  font-family:'Share Tech Mono';font-size:8px;color:var(--dimmer);
+  letter-spacing:.1em;text-transform:uppercase;
+}
+.screenshot-ph svg{opacity:.2;}
+.screenshot-ov{
+  position:absolute;inset:0;background:rgba(7,10,15,.8);
+  display:flex;align-items:center;justify-content:center;
+  opacity:0;transition:opacity .2s;
+}
+.screenshot:hover .screenshot-ov{opacity:1;}
+.screenshot-ov span{
+  font-family:'Share Tech Mono';font-size:9px;color:var(--cyan);
+  letter-spacing:.15em;text-transform:uppercase;
+}
+
+/* ── Links section ────────────────────────────────────── */
+.links-row{display:flex;gap:12px;flex-wrap:wrap;}
+.proj-link{
+  display:inline-flex;align-items:center;gap:10px;
+  padding:12px 20px;border:1px solid;
+  font-family:'Share Tech Mono';font-size:9px;letter-spacing:.18em;
+  text-transform:uppercase;text-decoration:none;transition:all .2s;
+}
+.proj-link.github{border-color:var(--border2);color:var(--dim);}
+.proj-link.github:hover{border-color:var(--text);color:var(--text);background:rgba(200,216,232,.04);}
+.proj-link.demo{border-color:rgba(0,212,255,.4);color:var(--cyan);}
+.proj-link.demo:hover{background:var(--cyan);color:var(--bg);}
+.proj-link.writeup{border-color:rgba(57,255,138,.3);color:var(--green);}
+.proj-link.writeup:hover{background:var(--green);color:var(--bg);}
+.proj-link.private{border-color:var(--border);color:var(--dimmer);cursor:not-allowed;}
+
+/* ── Footer ───────────────────────────────────────────── */
+footer{
+  padding:24px 64px;border-top:1px solid var(--border);
+  display:flex;justify-content:space-between;align-items:center;
+}
+footer span{font-family:'Share Tech Mono';font-size:9px;color:var(--dimmer);letter-spacing:.1em;}
+footer a{color:var(--dim);font-family:'Share Tech Mono';font-size:9px;letter-spacing:.1em;text-decoration:none;transition:color .2s;}
+footer a:hover{color:var(--cyan);}
+
+/* ── Responsive ───────────────────────────────────────── */
+@media(max-width:768px){
+  .nav,.main,footer{padding-left:24px;padding-right:24px;}
+  main{padding:40px 24px 72px;}
+  .stats-bar{grid-template-columns:1fr 1fr;}
+  .tech-grid,.screenshot-grid{grid-template-columns:1fr;}
+}
+@media(max-width:480px){
+  .stats-bar{grid-template-columns:1fr;}
+  .hero-title{font-size:36px;}
+}
+</style>
+</head>
+<body>
+
+<!-- ══════════════════════════════ NAV ══════════════════════════════ -->
+<!-- Keep this. Update the href if your folder structure is different -->
+<nav class="nav">
+  <a class="nav-back" href="../index.html">Portfolio</a>
+  <a class="nav-brand" href="../index.html">Raven<span>_</span>Sec</a>
+  <span class="nav-section">Development</span>  <!-- ← EDIT: change section label if needed -->
+</nav>
+
+
+<!-- ══════════════════════════════ MAIN ══════════════════════════════ -->
+<main>
+
+  <!-- ════════════════ SECTION: HERO — required ════════════════ -->
+  <div class="hero">
+    <div class="hero-meta">
+      <span>2026</span>                                    <!-- ← EDIT: year -->
+      <span>·</span>
+      <!-- Status badge: pick one, delete the others -->
+      <span class="hero-status active">Active</span>
+      <!-- <span class="hero-status wip">In Progress</span> -->
+      <!-- <span class="hero-status archived">Archived</span> -->
+    </div>
+
+    <h1 class="hero-title">hello<span>World</span></h1>  <!-- ← EDIT: project name. Wrap accent word in <span> -->
+
+    <p class="hero-tagline">
+      Creating helloWorld and expanding on the concept in various different languages just for practice and education.               <!-- ← EDIT: one-line pitch -->
+    </p>
+
+    <!-- ← EDIT: your tech stack tags -->
+    <div class="hero-tags">
+      <span class="htag">Python</span>
+      <span class="htag">C++</span>
+      <span class="htag">HTML/CSS</span>
+      <span class="htag">JavaScript</span>
+      <span class="htag">Java</span>
+      <span class="htag">Etc...</span>
+    </div>
+  </div>
+  <!-- ════════════════ SECTION END: HERO ════════════════ -->
+
+
+  <!-- ════════════════ SECTION: STATS BAR — optional ════════════════ -->
+  <!-- Remove the whole block if you don't have metrics to show -->
+  <div class="stats-bar">
+    <div class="stat-cell">
+      <div class="stat-n cy">100<span style="font-size:22px">%</span></div>  <!-- ← EDIT -->
+      <div class="stat-l">Entertainment Value</div>                        <!-- ← EDIT -->
+    </div>
+    <div class="stat-cell">
+      <div class="stat-n">6+</div>                                            <!-- ← EDIT -->
+      <div class="stat-l">languages</div>                                <!-- ← EDIT -->
+    </div>
+    <div class="stat-cell">
+      <div class="stat-n gr">~0s</div>                                       <!-- ← EDIT -->
+      <div class="stat-l">Avg Enrichment Time</div>                          <!-- ← EDIT -->
+    </div>
+    <div class="stat-cell">
+      <div class="stat-n">500<span style="font-size:18px;color:var(--cyan)">+</span></div>  <!-- ← EDIT -->
+      <div class="stat-l">Alerts / Day</div>                                 <!-- ← EDIT -->
+    </div>
+  </div>
+  <!-- ════════════════ SECTION END: STATS BAR ════════════════ -->
+
+
+  <!-- ════════════════ SECTION: OVERVIEW — recommended ════════════════ -->
+  <div class="section">
+    <div class="eyebrow">Overview</div>  <!-- ← EDIT: section label -->
+    <h2 class="sec-title">What it does</h2>
+    <div class="divider" style="margin:20px 0 28px;"></div>
+    <div class="prose">
+      <p>
+        Writing and elaborating on helloWorld for learning purposes.
+        taking the original concept and expanding on it by exploring new ways to display "Hello World".
+        Offers learning avenues in <strong>Programming/Coding/Scripting</strong>
+        Makes learning fun while keeping to original roots.
+      </p>                                                                    <!-- ← EDIT -->
+      <p>
+        Just plain fun. 
+      </p>                                                                    <!-- ← EDIT -->
+      <p>
+        The results are, many quality hours spent learning, exploring, and inovating.
+      </p>                                                                    <!-- ← EDIT -->
+    </div>
+  </div>
+  <!-- ════════════════ SECTION END: OVERVIEW ════════════════ -->
+
+
+  <!-- ════════════════ SECTION: CODE SNIPPET — optional ════════════════ -->
+  <!-- Delete this block if you have no code to show -->
+  <div class="section">
+    <div class="eyebrow">Implementation</div>  <!-- ← EDIT -->
+    <h2 class="sec-title">Core enrichment loop</h2>  <!-- ← EDIT -->
+    <div class="divider" style="margin:20px 0 28px;"></div>
+
+    <div class="code-wrap">
+      <div class="code-header">
+        <span class="code-lang">Visual Basic</span>           <!-- ← EDIT: language -->
+        <span class="code-file">helloWorld.vbs</span>  <!-- ← EDIT: filename -->
+      </div>
+      <!-- ← EDIT: paste your code here. Use span classes for colour hints:
+           .kw  = keywords (cyan)    .fn  = function names (blue)
+           .str = strings (green)    .cm  = comments (dim/italic)
+           .num = numbers (amber)                                    -->
+      <pre class="code-block"><code><span class="kw">async def</span> <span class="fn">enrich_ioc</span>(ioc: str, ioc_type: str) -> EnrichmentResult:
+    <span class="cm"># Fan out to all sources in parallel — no blocking</span>
+    vt, shodan, whois, misp = <span class="kw">await</span> asyncio.gather(
+        virustotal.lookup(ioc),
+        shodan.lookup(ioc) <span class="kw">if</span> ioc_type == <span class="str">"ip"</span> <span class="kw">else</span> <span class="fn">skip</span>(),
+        whois.lookup(ioc),
+        misp.search(ioc),
+        return_exceptions=<span class="kw">True</span>
+    )
+
+    verdict = <span class="fn">calculate_verdict</span>(vt, shodan, misp)
+    score   = <span class="fn">risk_score</span>(vt.detections, misp.threat_level)
+
+    <span class="kw">return</span> EnrichmentResult(
+        ioc=ioc,
+        verdict=verdict,       <span class="cm"># MALICIOUS / SUSPICIOUS / CLEAN / UNKNOWN</span>
+        score=score,           <span class="cm"># 0–100</span>
+        sources={<span class="str">"vt"</span>: vt, <span class="str">"shodan"</span>: shodan, <span class="str">"whois"</span>: whois, <span class="str">"misp"</span>: misp},
+        cached=<span class="kw">False</span>,
+        ts=<span class="fn">int</span>(time.time())
+    )</code></pre>
+    </div>
+  </div>
+  <!-- ════════════════ SECTION END: CODE SNIPPET ════════════════ -->
+
+
+  <!-- ════════════════ SECTION: FEATURES — recommended ════════════════ -->
+  <div class="section">
+    <div class="eyebrow">Features</div>  <!-- ← EDIT -->
+    <h2 class="sec-title">What's inside</h2>  <!-- ← EDIT -->
+    <div class="divider" style="margin:20px 0 28px;"></div>
+
+    <div class="feature-list">
+
+      <!-- ← EDIT: add/remove/change items. Keep the structure. -->
+
+      <div class="feature-item">
+        <div class="fi-icon">⚡</div>
+        <div class="fi-body">
+          <div class="fi-title">Parallel enrichment</div>
+          <div class="fi-desc">All intel sources are queried simultaneously via asyncio.gather — a 4-source enrichment completes in the time it takes to query the slowest single source.</div>
+        </div>
+      </div>
+
+      <div class="feature-item">
+        <div class="fi-icon">🗂️</div>
+        <div class="fi-body">
+          <div class="fi-title">Redis caching with per-source TTLs</div>
+          <div class="fi-desc">VirusTotal results cached for 6 hours, Shodan for 24 hours, WHOIS for 48 hours. Repeat IOCs return instantly and don't burn API quota.</div>
+        </div>
+      </div>
+
+      <div class="feature-item">
+        <div class="fi-icon">🔢</div>
+        <div class="fi-body">
+          <div class="fi-title">Composite risk scoring</div>
+          <div class="fi-desc">Weighted algorithm combines VT detection ratio, MISP threat level, and Shodan open-port risk profile into a single 0–100 score with a MALICIOUS / SUSPICIOUS / CLEAN verdict.</div>
+        </div>
+      </div>
+
+      <div class="feature-item">
+        <div class="fi-icon">🔌</div>
+        <div class="fi-body">
+          <div class="fi-title">Webhook + REST API</div>
+          <div class="fi-desc">Accepts alerts via webhook for SIEM push integration. Also exposes a REST endpoint so analysts can enrich IOCs on-demand from the browser or CLI.</div>
+        </div>
+      </div>
+
+      <div class="feature-item">
+        <div class="fi-icon">🧩</div>
+        <div class="fi-body">
+          <div class="fi-title">Pluggable source adapters</div>
+          <div class="fi-desc">Each intel source is an isolated adapter implementing a common interface. Adding a new source (Abuse.ch, OTX, etc.) requires writing one class — nothing else changes.</div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+  <!-- ════════════════ SECTION END: FEATURES ════════════════ -->
+
+
+  <!-- ════════════════ SECTION: TECH STACK — optional ════════════════ -->
+  <div class="section">
+    <div class="eyebrow">Stack</div>
+    <h2 class="sec-title">Technologies used</h2>
+    <div class="divider" style="margin:20px 0 28px;"></div>
+
+    <!-- ← EDIT: groups and tags. Add/remove groups as needed. -->
+    <div class="tech-grid">
+
+      <div class="tech-group">
+        <div class="tech-group-label">Backend</div>
+        <div class="tech-tags">
+          <span class="ttag">Python 3.11</span>
+          <span class="ttag">FastAPI</span>
+          <span class="ttag">asyncio</span>
+          <span class="ttag">Pydantic</span>
+        </div>
+      </div>
+
+      <div class="tech-group">
+        <div class="tech-group-label">Storage &amp; Cache</div>
+        <div class="tech-tags">
+          <span class="ttag">Redis</span>
+          <span class="ttag">Redis Pub/Sub</span>
+          <span class="ttag">JSON serialization</span>
+        </div>
+      </div>
+
+      <div class="tech-group">
+        <div class="tech-group-label">Intel Sources</div>
+        <div class="tech-tags">
+          <span class="ttag">VirusTotal v3</span>
+          <span class="ttag">Shodan API</span>
+          <span class="ttag">MISP REST</span>
+          <span class="ttag">python-whois</span>
+        </div>
+      </div>
+
+      <div class="tech-group">
+        <div class="tech-group-label">Infrastructure</div>
+        <div class="tech-tags">
+          <span class="ttag">Docker</span>
+          <span class="ttag">Docker Compose</span>
+          <span class="ttag">Uvicorn</span>
+          <span class="ttag">Nginx</span>
+        </div>
+      </div>
+
+    </div>
+  </div>
+  <!-- ════════════════ SECTION END: TECH STACK ════════════════ -->
+
+
+  <!-- ════════════════ SECTION: SCREENSHOTS — optional ════════════════ -->
+  <!-- Delete if no screenshots. Replace .screenshot-ph with <img> when you have real images. -->
+  <div class="section">
+    <div class="eyebrow">Screenshots</div>
+    <h2 class="sec-title">In action</h2>
+    <div class="divider" style="margin:20px 0 28px;"></div>
+
+    <div class="screenshot-grid">
+
+      <!-- ← EDIT: replace each placeholder with:
+           <img src="../assets/sentinelflow-dashboard.png" alt="Dashboard view">
+           (once you have real screenshots)                              -->
+
+      <div class="screenshot">
+        <div class="screenshot-ph">
+          <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1">
+            <rect x="3" y="3" width="18" height="18" rx="1"/>
+            <circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/>
+          </svg>
+          <span>Dashboard view</span>  <!-- ← EDIT: caption -->
+        </div>
+        <div class="screenshot-ov"><span>Coming soon</span></div>  <!-- ← EDIT or remove -->
+      </div>
+
+      <div class="screenshot">
+        <div class="screenshot-ph">
+          <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1">
+            <rect x="3" y="3" width="18" height="18" rx="1"/>
+            <circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/>
+          </svg>
+          <span>Enrichment detail</span>  <!-- ← EDIT: caption -->
+        </div>
+        <div class="screenshot-ov"><span>Coming soon</span></div>
+      </div>
+
+    </div>
+  </div>
+  <!-- ════════════════ SECTION END: SCREENSHOTS ════════════════ -->
+
+
+  <!-- ════════════════ SECTION: LINKS — recommended ════════════════ -->
+  <div class="section">
+    <div class="eyebrow">Links</div>
+    <h2 class="sec-title">Source &amp; demo</h2>
+    <div class="divider" style="margin:20px 0 28px;"></div>
+
+    <div class="links-row">
+      <!-- ← EDIT: update hrefs. Delete buttons you don't need.
+           Available styles: .github  .demo  .writeup  .private      -->
+
+      <a class="proj-link github" href="https://github.com/YOURUSERNAME/sentinelflow" target="_blank" rel="noopener">
+        <!-- GitHub SVG icon -->
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z"/>
+        </svg>
+        View Source
+      </a>
+
+      <a class="proj-link demo" href="#" target="_blank" rel="noopener">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/>
+        </svg>
+        Live Demo
+      </a>
+
+      <a class="proj-link writeup" href="#" target="_blank" rel="noopener">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/>
+        </svg>
+        Write-up
+      </a>
+
+      <!-- Use .private for closed-source or unavailable projects -->
+      <!-- <a class="proj-link private" href="#">⊘ Private Repo</a> -->
+
+    </div>
+  </div>
+  <!-- ════════════════ SECTION END: LINKS ════════════════ -->
+
+</main>
+
+
+<!-- ════════════════════════════════ FOOTER ════════════════════════════════ -->
+<!-- Keep this. Update the year/name if needed. -->
+<footer>
+  <span>© 2025 RavenSec</span>  <!-- ← EDIT: year/name -->
+  <a href="../index.html">← Back to Portfolio</a>
+</footer>
+
+</body>
+</html>
