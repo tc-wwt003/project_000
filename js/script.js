@@ -334,12 +334,48 @@ async function registerAndEnter() {
 }
 
 async function skipReg() {
-  const email = prompt('Enter your registered email to skip:');
+  // Anon users have no SELECT on visitors, so we can't query by email.
+  // Returning visitors will have a valid session in localStorage — check that first.
+  const sess = getSess();
+  if (sess) {
+    enterPf(sess, false);
+    return;
+  }
+
+  // No local session — ask for email and attempt a re-insert.
+  // If the unique constraint fires (23505), the email is registered
+  // and we reconstruct a minimal session from what they typed.
+  const email = prompt('Enter your registered email address:');
   if (!email) return;
-  const visitors = await dbGetVisitors();
-  const found = visitors.find(v => v.email.toLowerCase() === email.trim().toLowerCase());
-  if (found) { setSess(found); enterPf(found, false); }
-  else toast('<span class="hi">Email not found.</span> Please fill in the form above.');
+  const trimmed = email.trim().toLowerCase();
+  if (!trimmed || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmed)) {
+    toast('<span class="hi">Please enter a valid email address.</span>');
+    return;
+  }
+
+  if (_ok) {
+    // Attempt insert of a minimal probe record with ts:-1 as a sentinel
+    const probe = { name: '~probe~', email: trimmed, company: '~probe~', date: '', mo: '', ts: -1 };
+    const { error } = await _db.from('visitors').insert([probe]);
+
+    if (error?.code === '23505') {
+      // Unique violation — email definitely exists in the table
+      const sess = { name: trimmed.split('@')[0], email: trimmed, company: '' };
+      setSess(sess);
+      enterPf(sess, false);
+      return;
+    }
+
+    if (!error) {
+      // Insert went through — email was not registered, clean up the probe
+      await _db.from('visitors').delete().match({ email: trimmed, ts: -1 });
+    }
+    toast('<span class="hi">Email not found.</span> Please fill in the form above.');
+    return;
+  }
+
+  // Supabase offline fallback
+  toast('<span class="hi">Email not found.</span> Please fill in the form above.');
 }
 
 async function enterPf(s, isNew) {
@@ -350,30 +386,11 @@ async function enterPf(s, isNew) {
   document.getElementById('sess-lbl').textContent = 'SESSION: ' + first.toUpperCase();
   if (isNew) toast(`<span class="ok">✓ Access granted.</span> Welcome, <span class="hi">${esc(s.name)}</span>. You're in the log.`, 4500);
   else        toast(`<span class="ok">✓</span> Welcome back, <span class="hi">${esc(first)}</span>.`, 3000);
-  await loadLog();
 }
 
 async function loadLog() {
-  const visitors = await dbGetVisitors();
-  const s  = getSess();
-  const me = s?.email?.toLowerCase();
-  document.getElementById('vs-total').textContent  = visitors.length;
-  const mo = `${new Date().getMonth()}:${new Date().getFullYear()}`;
-  document.getElementById('vs-month').textContent  = visitors.filter(v => v.mo === mo).length;
-  const top = visitors[0];
-  document.getElementById('vs-latest').textContent = top ? (top.company||'—').split(/\s/)[0] : '—';
-  document.getElementById('vth-count').textContent = visitors.length + ' records';
-  document.getElementById('gate-count').textContent = visitors.length;
-  const tb = document.getElementById('vis-tbody');
-  if (!visitors.length) {
-    tb.innerHTML = '<tr><td colspan="4" style="color:var(--dimmer)">No visitors yet.</td></tr>';
-    return;
-  }
-  tb.innerHTML = visitors.map((v, i) => {
-    const isMe  = v.email.toLowerCase() === me;
-    const badge = isMe ? '<span class="you-b">You</span>' : i === 0 ? '<span class="new-b">Latest</span>' : '';
-    return `<tr><td class="nc">${esc(v.name)}${badge}</td><td>${esc(v.email)}</td><td>${esc(v.company||'—')}</td><td>${esc(v.date||'—')}</td></tr>`;
-  }).join('');
+  // Visitor log moved to admin panel — anon users have no SELECT on visitors.
+  // Nothing to update on the public side.
 }
 
 function switchTab(name, btn) {
