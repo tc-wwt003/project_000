@@ -1,7 +1,7 @@
 'use strict';
 
 const SUPABASE_URL = 'https://uyueojhfvotwyhjrgmme.supabase.co';
-const SUPABASE_KEY = 'sb_publishable_L0mn2hLBol3uC-a7pqWnxQ_3Uwz80Ro';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InV5dWVvamhmdm90d3loanJnbW1lIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIxMjEwMTIsImV4cCI6MjA4NzY5NzAxMn0.509kaW2qTkkDEtZ4pbCxWIXxSf1DwH9DVOZLYU7d0rM';
 
 const VISITOR_PW_DEFAULT = 'portfolio2025';
 const PBKDF2_SALT        = 'a3f8e2b1c4d5e6f7a8b9c0d1e2f3a4b5';
@@ -25,7 +25,7 @@ let _ok   = false;
 
 function initSupabase() {
   try {
-    if (SUPABASE_URL === 'https://uyueojhfvotwyhjrgmme.supabase.co' || SUPABASE_KEY === 'sb_publishable_L0mn2hLBol3uC-a7pqWnxQ_3Uwz80Ro') {
+    if (SUPABASE_URL === 'https://uyueojhfvotwyhjrgmme.supabase.co' || SUPABASE_KEY === 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InV5dWVvamhmdm90d3loanJnbW1lIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIxMjEwMTIsImV4cCI6MjA4NzY5NzAxMn0.509kaW2qTkkDEtZ4pbCxWIXxSf1DwH9DVOZLYU7d0rM') {
       console.warn('Supabase config not set — running in offline-demo mode.');
       return false;
     }
@@ -767,5 +767,6 @@ async function saveNewVisitorPassword() {
     btn.disabled = false; btn.textContent = 'Hash & Save →';
   }
 }
+
 
 init();
