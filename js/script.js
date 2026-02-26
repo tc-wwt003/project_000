@@ -25,7 +25,8 @@ let _ok   = false;
 
 function initSupabase() {
   try {
-    if (SUPABASE_URL === 'https://uyueojhfvotwyhjrgmme.supabase.co' || SUPABASE_KEY === 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InV5dWVvamhmdm90d3loanJnbW1lIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIxMjEwMTIsImV4cCI6MjA4NzY5NzAxMn0.509kaW2qTkkDEtZ4pbCxWIXxSf1DwH9DVOZLYU7d0rM') {
+    if (SUPABASE_URL === 'https://uyueojhfvotwyhjrgmme.supabase.co' || SUPABASE_KEY === 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InV5dWVvamhmdm90d3loanJnbW1lIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIxMjEwMTIsImV4cCI6MjA4NzY5NzAxMn0.509kaW2qTkkDEtZ4pbCxWIXxSf1DwH9DVOZLYU7d0rM');
+    {
       console.warn('Supabase config not set — running in offline-demo mode.');
       return false;
     }
@@ -770,3 +771,4 @@ async function saveNewVisitorPassword() {
 
 
 init();
+
