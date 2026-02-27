@@ -25,7 +25,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Syne:wght@300;400;700;800&family=IBM+Plex+Mono:ital,wght@0,300;0,400;1,300&display=swap" rel="stylesheet">
 
 <!-- Supabase JS SDK (UMD build — no bundler required) -->
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<!--<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>-->
 
 </head>
 <body>
@@ -47,7 +47,27 @@
       <button class="pw-submit" onclick="checkPw()">→</button>
     </div>
     <div class="pw-error" id="pw-error"></div>
-    <p class="gate-hint">Contact the site owner for access credentials.</p>
+
+    <p class="gate-hint">Have the access code? Enter it above.</p>
+
+    <span class="req-toggle" onclick="toggleReqPanel()">↓ Request access</span>
+    <div class="req-panel" id="req-panel">
+      <div class="req-panel-title">Request Access</div>
+      <div class="req-sent" id="req-sent">
+        ✓ Request received. You will be contacted at the email you provided.
+      </div>
+      <div class="req-duplicate" id="req-duplicate">
+        A request from this email has already been submitted.<br>
+        Please allow time for a response before submitting again.
+      </div>
+      <div id="req-form-inner">
+        <div class="vf-row"><label class="vf-label" for="req-name">Full Name</label><input class="vf-input" id="req-name" type="text" placeholder="Your name" autocomplete="name"></div>
+        <div class="vf-row"><label class="vf-label" for="req-email">Email Address</label><input class="vf-input" id="req-email" type="email" placeholder="you@company.com" autocomplete="email"></div>
+        <div class="vf-row"><label class="vf-label" for="req-co">Company / Organization</label><input class="vf-input" id="req-co" type="text" placeholder="Where are you from?"></div>
+        <div class="vf-row"><label class="vf-label" for="req-note">Why do you want access? <span style="color:var(--dimmer)">(optional)</span></label><textarea class="vf-input comment-textarea" id="req-note" placeholder="Brief note..." style="min-height:80px;max-height:160px;"></textarea></div>
+        <button class="vf-submit" id="req-submit-btn" style="background:var(--panel);color:var(--cyan);border:1px solid rgba(0,212,255,.3);" onclick="submitRequest()">SUBMIT REQUEST →</button>
+      </div>
+    </div>
 
     <div class="vf-section" id="vf-section">
       <div class="vf-title">Register your visit</div>
@@ -68,6 +88,7 @@
 <!-- ══════════════════════════════ PORTFOLIO PAGE ══════════════════════════════ -->
 <div class="page" id="portfolio-page">
   <nav class="nav">
+    <!-- Desktop nav elements (hidden below 600px) -->
     <div class="nav-left">
       <div class="nav-status">Live</div>
       <div class="nav-brand">Raven<span>_</span>Sec</div>
@@ -79,10 +100,32 @@
       <button class="tab-btn" onclick="switchTab('dev',this)">Development</button>
       <button class="tab-btn" onclick="switchTab('art',this)">Art &amp; Design</button>
       <button class="tab-btn" onclick="switchTab('blog',this)">Blog</button>
+      <button class="tab-btn" onclick="switchTab('comments',this)">Comments</button>
     </div>
     <div class="nav-right">
       <div class="nav-user">Session: <strong id="nav-name">—</strong></div>
       <button class="nav-exit" onclick="exitPf()">⏻ EXIT</button>
+    </div>
+
+    <!-- Mobile bar (visible below 600px) -->
+    <div class="mob-bar">
+      <div class="mob-brand-row">
+        <div class="nav-brand" style="font-size:16px">Raven<span style="color:var(--cyan)">_</span>Sec</div>
+        <div class="mob-right">
+          <div class="mob-session">ID: <strong id="mob-nav-name">—</strong></div>
+          <button class="mob-menu-btn" id="mob-menu-btn" onclick="toggleMobMenu()">[MENU]</button>
+        </div>
+      </div>
+      <div class="mob-drawer" id="mob-drawer">
+        <button class="mob-tab active" id="mob-tab-about"    onclick="mobTab('about',this)">◈ About</button>
+        <button class="mob-tab"        id="mob-tab-soc"      onclick="mobTab('soc',this)">◈ SOC / Security</button>
+        <button class="mob-tab"        id="mob-tab-dev"      onclick="mobTab('dev',this)">◈ Development</button>
+        <button class="mob-tab"        id="mob-tab-art"      onclick="mobTab('art',this)">◈ Art &amp; Design</button>
+        <button class="mob-tab"        id="mob-tab-blog"     onclick="mobTab('blog',this)">◈ Blog</button>
+        <button class="mob-tab"        id="mob-tab-comments" onclick="mobTab('comments',this)">◈ Comments</button>
+        <div class="mob-divider"></div>
+        <button class="mob-exit" onclick="exitPf()">⏻ End Session</button>
+      </div>
     </div>
   </nav>
 
@@ -226,6 +269,32 @@
     </div>
   </div>
 
+  <!-- Comments -->
+  <div class="section" id="sec-comments">
+    <div class="sec-eye">Visitor Log</div>
+    <h2 class="sec-title">Leave a Mark</h2>
+    <p class="sec-sub">One comment. Permanent. Yours forever.</p>
+    <div class="comments-wrap">
+      <div class="comment-form-box" id="comment-form-box">
+        <div class="comment-form-title">Your Comment</div>
+        <div id="comment-already-box" style="display:none">
+          <div class="comment-already-label">// You already left your mark</div>
+          <div class="comment-already" id="comment-already-text"></div>
+        </div>
+        <div id="comment-input-box">
+          <textarea class="comment-textarea" id="comment-body-input" placeholder="Say something — you only get one shot." maxlength="500" oninput="updateCharCount()"></textarea>
+          <span class="comment-char" id="comment-char-count">500 characters remaining</span>
+          <span class="comment-hint">Plain text only · No editing after submission · Max 500 characters</span>
+          <button class="comment-submit" id="comment-submit-btn" onclick="submitComment()">LEAVE YOUR MARK →</button>
+        </div>
+      </div>
+      <div class="comments-count-lbl" id="comments-count-lbl"></div>
+      <div class="comments-list" id="comments-list">
+        <div class="comments-empty">Loading comments...</div>
+      </div>
+    </div>
+  </div>
+
   <footer>
     <span>© 2025 RavenSec Portfolio — Restricted Access</span>
     <div style="display:flex;gap:16px;align-items:center;">
@@ -275,6 +344,8 @@
       <div class="admin-sidebar-divider"></div>
       <div class="admin-sidebar-label">Data</div>
       <div class="admin-sidebar-item" onclick="adminTab('visitors',this)"><span class="ai">◉</span> Visitors</div>
+      <div class="admin-sidebar-item" onclick="adminTab('requests',this)"><span class="ai">✉</span> Requests <span id="req-badge" style="display:none;margin-left:4px;font-size:7px;padding:1px 5px;background:var(--amber);color:var(--bg);font-family:'Share Tech Mono'">NEW</span></div>
+      <div class="admin-sidebar-item" onclick="adminTab('comments',this)"><span class="ai">◎</span> Comments</div>
       <div class="admin-sidebar-item" onclick="adminTab('security',this)"><span class="ai">🔐</span> Security</div>
     </aside>
     <main class="admin-main">
@@ -289,6 +360,7 @@
           <div class="astat"><div class="astat-n cy" id="a-stat-pub">—</div><div class="astat-l">Published</div></div>
           <div class="astat"><div class="astat-n" id="a-stat-draft">—</div><div class="astat-l">Drafts</div></div>
           <div class="astat"><div class="astat-n gr" id="a-stat-vis">—</div><div class="astat-l">Visitors</div></div>
+          <div class="astat"><div class="astat-n am" id="a-stat-req">—</div><div class="astat-l">Pending Requests</div></div>
           <div class="astat"><div class="astat-n" id="a-stat-total">—</div><div class="astat-l">Total Posts</div></div>
         </div>
         <div style="font-family:'Share Tech Mono';font-size:9px;letter-spacing:.2em;text-transform:uppercase;color:var(--cyan);margin-bottom:16px">Recent Posts</div>
@@ -387,6 +459,29 @@
             </div>
           </div>
         </div>
+      </div>
+
+
+      <!-- Access Requests -->
+      <div class="admin-panel" id="admin-panel-requests">
+        <div class="admin-panel-hd">
+          <h2>Access Requests</h2>
+          <button class="admin-btn ghost" onclick="refreshRequests()">↻ Refresh</button>
+        </div>
+        <div style="font-family:'Share Tech Mono';font-size:9px;color:var(--dim);letter-spacing:.1em;margin-bottom:20px;line-height:1.8;">
+          These visitors have requested the gate code. Contact them out-of-band with the password.<br>
+          Mark as <span style="color:var(--green)">Sent</span> once you've replied.
+        </div>
+        <div id="admin-req-list"><div class="comments-empty">Loading...</div></div>
+      </div>
+
+      <!-- Comments -->
+      <div class="admin-panel" id="admin-panel-comments">
+        <div class="admin-panel-hd">
+          <h2>Visitor Comments</h2>
+          <button class="admin-btn ghost" onclick="refreshAdminComments()">↻ Refresh</button>
+        </div>
+        <div id="admin-comment-list"><div class="comments-empty">Loading...</div></div>
       </div>
 
     </main>
