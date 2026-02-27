@@ -1,7 +1,8 @@
 'use strict';
 
 const SUPABASE_URL = 'https://uyueojhfvotwyhjrgmme.supabase.co';
-const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InV5dWVvamhmdm90d3loanJnbW1lIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIxMjEwMTIsImV4cCI6MjA4NzY5NzAxMn0.509kaW2qTkkDEtZ4pbCxWIXxSf1DwH9DVOZLYU7d0rM';
+const SUPABASE_KEY = 'sb_publishable_L0mn2hLBol3uC-a7pqWnxQ_3Uwz80Ro';
+const EDGE_FN_URL  = 'REPLACE_ME';   // https://xxxx.supabase.co/functions/v1/send-access-request
 
 const VISITOR_PW_DEFAULT = 'portfolio2025';
 const PBKDF2_SALT        = 'a3f8e2b1c4d5e6f7a8b9c0d1e2f3a4b5';
@@ -248,6 +249,13 @@ async function init() {
   const sess = getSess();
   if (sess) enterPf(sess, false);
 
+  // Check for pending access requests (badge in admin sidebar)
+  if (_ok) {
+    const reqs = await dbGetRequests();
+    const badge = document.getElementById('req-badge');
+    if (badge && reqs.some(r => r.status === 'pending')) badge.style.display = 'inline';
+  }
+
   // Keyboard shortcut: Ctrl+Shift+A → admin gate
   document.addEventListener('keydown', e => {
     if (e.ctrlKey && e.shiftKey && e.key === 'A') { e.preventDefault(); openAdminGate(); }
@@ -384,6 +392,7 @@ async function enterPf(s, isNew) {
   const first = s.name.split(' ')[0];
   document.getElementById('nav-name').textContent = first;
   document.getElementById('sess-lbl').textContent = 'SESSION: ' + first.toUpperCase();
+  syncMobName(first);
   if (isNew) toast(`<span class="ok">✓ Access granted.</span> Welcome, <span class="hi">${esc(s.name)}</span>. You're in the log.`, 4500);
   else        toast(`<span class="ok">✓</span> Welcome back, <span class="hi">${esc(first)}</span>.`, 3000);
 }
@@ -393,14 +402,60 @@ async function loadLog() {
   // Nothing to update on the public side.
 }
 
+/* ═══════════════════════════════════════════════════════
+   MOBILE NAV
+   ═══════════════════════════════════════════════════════ */
+function toggleMobMenu() {
+  const drawer = document.getElementById('mob-drawer');
+  const btn    = document.getElementById('mob-menu-btn');
+  const open   = drawer.classList.toggle('open');
+  btn.classList.toggle('open', open);
+  btn.textContent = open ? '[CLOSE]' : '[MENU]';
+}
+
+function mobTab(name, btn) {
+  // Close the drawer
+  document.getElementById('mob-drawer').classList.remove('open');
+  const menuBtn = document.getElementById('mob-menu-btn');
+  menuBtn.classList.remove('open');
+  menuBtn.textContent = '[MENU]';
+
+  // Sync desktop tab active state
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  const desktopBtn = document.querySelector(`.tab-btn[onclick*="'${name}'"]`);
+  if (desktopBtn) desktopBtn.classList.add('active');
+
+  // Sync mobile tab active state
+  document.querySelectorAll('.mob-tab').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+
+  // Show the section (reuse existing switchTab logic)
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('visible'));
+  document.getElementById('sec-' + name).classList.add('visible');
+  if (name === 'soc')      setTimeout(triggerSkills, 100);
+  if (name === 'blog')     loadBlog();
+  if (name === 'comments') loadComments();
+}
+
+function syncMobName(name) {
+  const el = document.getElementById('mob-nav-name');
+  if (el) el.textContent = name;
+}
+
 function switchTab(name, btn) {
   document.querySelectorAll('.tab-btn').forEach(b  => b.classList.remove('active'));
   document.querySelectorAll('.section').forEach(s  => s.classList.remove('visible'));
   if (btn) btn.classList.add('active');
   document.getElementById('sec-' + name).classList.add('visible');
-  if (name === 'vis')  loadLog();
-  if (name === 'soc')  setTimeout(triggerSkills, 100);
-  if (name === 'blog') loadBlog();
+  
+  // Keep mobile tab active state in sync
+  document.querySelectorAll('.mob-tab').forEach(b => b.classList.remove('active'));
+  const mobBtn = document.getElementById('mob-tab-' + name);
+  if (mobBtn) mobBtn.classList.add('active');
+  if (name === 'vis')      loadLog();
+  if (name === 'soc')      setTimeout(triggerSkills, 100);
+  if (name === 'blog')     loadBlog();
+  if (name === 'comments') loadComments();
 }
 
 function triggerSkills() {
@@ -596,6 +651,11 @@ async function refreshAdminData() {
   document.getElementById('a-stat-draft').textContent = posts.filter(p => !p.published).length;
   document.getElementById('a-stat-vis').textContent   = visitors.length;
   document.getElementById('a-stat-total').textContent = posts.length;
+  const reqs = await dbGetRequests();
+  const pendingCount = reqs.filter(r => r.status === 'pending').length;
+  document.getElementById('a-stat-req').textContent = pendingCount;
+  const badge = document.getElementById('req-badge');
+  if (badge) badge.style.display = pendingCount ? 'inline' : 'none';
   renderAdminMiniList('admin-recent-list', posts.slice(0, 5));
   document.getElementById('admin-vis-count').textContent = visitors.length + ' records';
   document.getElementById('admin-vis-tbody').innerHTML = visitors.length
@@ -652,6 +712,8 @@ function adminTab(name, btn) {
   if (name === 'posts')    renderAdminPostList();
   if (name === 'new')      resetEditor();
   if (name === 'security') loadSecurityPanel();
+  if (name === 'requests') refreshRequests();
+  if (name === 'comments') refreshAdminComments();
 }
 
 /* ─── Post editor ─────────────────────────────────── */
@@ -783,5 +845,357 @@ async function saveNewVisitorPassword() {
     btn.disabled = false; btn.textContent = 'Hash & Save →';
   }
 }
+
+
+/* ═══════════════════════════════════════════════════════
+   ACCESS REQUESTS
+   ═══════════════════════════════════════════════════════ */
+
+const LS_REQ_SUBMITTED = 'rs_req_submitted'; // localStorage flag — per device
+
+async function dbAddRequest(rec) {
+  if (!_ok) return { ok: false, duplicate: false };
+  try {
+    const { error } = await _db.from('access_requests').insert([rec]);
+    if (error) {
+      if (error.code === '23505') return { ok: false, duplicate: true };
+      throw error;
+    }
+    return { ok: true, duplicate: false };
+  } catch (e) {
+    console.error('addRequest:', e);
+    return { ok: false, duplicate: false };
+  }
+}
+
+async function dbGetRequests() {
+  if (!_ok) return [];
+  try {
+    const { data, error } = await _db
+      .from('access_requests')
+      .select('*')
+      .order('ts', { ascending: false });
+    if (error) throw error;
+    return data || [];
+  } catch (e) { console.error('getRequests:', e); return []; }
+}
+
+async function dbMarkRequestSent(id) {
+  if (!_ok) return;
+  const { error } = await _db
+    .from('access_requests')
+    .update({ status: 'sent' })
+    .eq('id', id);
+  if (error) console.error('markRequestSent:', error);
+}
+
+function toggleReqPanel() {
+  const panel = document.getElementById('req-panel');
+  panel.classList.toggle('open');
+  const toggle = document.querySelector('.req-toggle');
+  toggle.textContent = panel.classList.contains('open')
+    ? '↑ Close request form' : '↓ Request access';
+}
+
+async function submitRequest() {
+  const name  = document.getElementById('req-name').value.trim();
+  const email = document.getElementById('req-email').value.trim();
+  const co    = document.getElementById('req-co').value.trim();
+  const note  = document.getElementById('req-note').value.trim();
+
+  // Basic validation
+  let valid = true;
+  ['req-name','req-email','req-co'].forEach(id => document.getElementById(id).classList.remove('err'));
+  if (!name)  { document.getElementById('req-name').classList.add('err');  valid = false; }
+  if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    document.getElementById('req-email').classList.add('err'); valid = false;
+  }
+  if (!co)    { document.getElementById('req-co').classList.add('err');    valid = false; }
+  if (!valid) return;
+
+  // Check localStorage flag — prevent re-submission from same device
+  const prevEmail = localStorage.getItem(LS_REQ_SUBMITTED);
+  if (prevEmail) {
+    document.getElementById('req-duplicate').classList.add('show');
+    document.getElementById('req-form-inner').style.display = 'none';
+    return;
+  }
+
+  const btn = document.getElementById('req-submit-btn');
+  btn.disabled = true;
+  btn.textContent = 'Submitting...';
+
+  const rec = { name, email, company: co, note: note || null, status: 'pending', ts: Date.now() };
+  const result = await dbAddRequest(rec);
+
+  if (result.duplicate) {
+    // Email already in DB from a different device
+    localStorage.setItem(LS_REQ_SUBMITTED, email);
+    document.getElementById('req-duplicate').classList.add('show');
+    document.getElementById('req-form-inner').style.display = 'none';
+    return;
+  }
+
+  if (!result.ok) {
+    btn.disabled = false;
+    btn.textContent = 'SUBMIT REQUEST →';
+    toast('<span style="color:var(--red)">✕ Submission failed. Please try again.</span>');
+    return;
+  }
+
+  // Record saved — now fire the Edge Function for email notification
+  localStorage.setItem(LS_REQ_SUBMITTED, email);
+  try {
+    if (EDGE_FN_URL && EDGE_FN_URL !== 'REPLACE_ME') {
+      await fetch(EDGE_FN_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name, email, company: co, note }),
+      });
+    }
+  } catch (e) {
+    // Email notification failure is non-fatal — request is already saved in DB
+    console.warn('Edge function notification failed:', e);
+  }
+
+  document.getElementById('req-sent').classList.add('show');
+  document.getElementById('req-form-inner').style.display = 'none';
+}
+
+async function refreshRequests() {
+  const list = document.getElementById('admin-req-list');
+  list.innerHTML = '<div class="comments-empty">Loading...</div>';
+  const reqs = await dbGetRequests();
+
+  // Update NEW badge on sidebar
+  const pending = reqs.filter(r => r.status === 'pending');
+  const badge = document.getElementById('req-badge');
+  if (badge) badge.style.display = pending.length ? 'inline' : 'none';
+
+  if (!reqs.length) {
+    list.innerHTML = '<div class="comments-empty">No access requests yet.</div>';
+    return;
+  }
+
+  list.innerHTML = reqs.map(r => `
+    <div class="req-admin-row" id="req-row-${esc(r.id)}">
+      <div class="req-admin-info">
+        <div class="ra-name">${esc(r.name)}</div>
+        <div class="ra-email">${esc(r.email)}</div>
+        <div class="ra-co">${esc(r.company || '—')}</div>
+        ${r.note ? `<div class="ra-note">${esc(r.note)}</div>` : ''}
+        <div class="ra-ts">${r.ts ? new Date(r.ts).toLocaleString() : '—'}</div>
+      </div>
+      <div>
+        <div class="req-status-badge ${r.status === 'sent' ? 'sent' : 'pending'}">
+          ${r.status === 'sent' ? '✓ Sent' : '⧖ Pending'}
+        </div>
+        ${r.status === 'pending' ? `<button class="req-mark-btn" onclick="markReqSent('${esc(r.id)}')">Mark as sent →</button>` : ''}
+      </div>
+    </div>`).join('');
+}
+
+async function markReqSent(id) {
+  await dbMarkRequestSent(id);
+  await refreshRequests();
+  toast('<span class="ok">✓</span> Marked as sent.');
+}
+
+/* ═══════════════════════════════════════════════════════
+   COMMENTS
+   ═══════════════════════════════════════════════════════ */
+
+const LS_COMMENT_KEY = 'rs_my_comment'; // stores visitor's own submitted comment text
+
+async function dbAddComment(rec) {
+  if (!_ok) return { ok: false, duplicate: false };
+  try {
+    const { error } = await _db.from('comments').insert([rec]);
+    if (error) {
+      if (error.code === '23505') return { ok: false, duplicate: true };
+      throw error;
+    }
+    return { ok: true, duplicate: false };
+  } catch (e) { console.error('addComment:', e); return { ok: false, duplicate: false }; }
+}
+
+async function dbGetComments() {
+  if (!_ok) return [];
+  try {
+    const { data, error } = await _db
+      .from('comments')
+      .select('visitor_name, body, ts')
+      .order('ts', { ascending: false });
+    if (error) throw error;
+    return data || [];
+  } catch (e) { console.error('getComments:', e); return []; }
+}
+
+async function dbGetAllCommentsAdmin() {
+  if (!_ok) return [];
+  try {
+    const { data, error } = await _db
+      .from('comments')
+      .select('*')
+      .order('ts', { ascending: false });
+    if (error) throw error;
+    return data || [];
+  } catch (e) { console.error('getCommentsAdmin:', e); return []; }
+}
+
+async function dbDeleteComment(id) {
+  if (!_ok) throw new Error('Not connected');
+  const { error } = await _db.from('comments').delete().eq('id', id);
+  if (error) throw error;
+}
+
+function updateCharCount() {
+  const ta  = document.getElementById('comment-body-input');
+  const lbl = document.getElementById('comment-char-count');
+  if (!ta || !lbl) return;
+  const remaining = 500 - ta.value.length;
+  lbl.textContent = remaining + ' characters remaining';
+  lbl.classList.toggle('warn', remaining < 80);
+}
+
+async function loadComments() {
+  const sess = getSess();
+  const myEmail = sess?.email?.toLowerCase();
+
+  // Check if this visitor already commented (localStorage first — fast)
+  const myCached = localStorage.getItem(LS_COMMENT_KEY);
+  const inputBox  = document.getElementById('comment-input-box');
+  const alreadyBox = document.getElementById('comment-already-box');
+  const alreadyTxt = document.getElementById('comment-already-text');
+
+  if (myCached) {
+    inputBox.style.display   = 'none';
+    alreadyBox.style.display = 'block';
+    alreadyTxt.textContent   = myCached;
+  } else {
+    inputBox.style.display   = 'block';
+    alreadyBox.style.display = 'none';
+  }
+
+  // Load all comments for display
+  const comments = await dbGetComments();
+  const countLbl = document.getElementById('comments-count-lbl');
+  const list     = document.getElementById('comments-list');
+
+  if (countLbl) countLbl.textContent = comments.length
+    ? `${comments.length} visitor${comments.length === 1 ? '' : 's'} left their mark`
+    : '';
+
+  if (!comments.length) {
+    list.innerHTML = '<div class="comments-empty">No comments yet.<br>Be the first to leave your mark.</div>';
+    return;
+  }
+
+  list.innerHTML = comments.map(c => {
+    const isMe = myEmail && c.visitor_email && c.visitor_email.toLowerCase() === myEmail;
+    return `
+      <div class="comment-row">
+        <div class="comment-row-header">
+          <span class="comment-name">${esc(c.visitor_name)}${isMe ? '<span class="comment-you">You</span>' : ''}</span>
+          <span class="comment-meta">${c.ts ? new Date(c.ts).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}) : ''}</span>
+        </div>
+        <div class="comment-body">${esc(c.body)}</div>
+      </div>`;
+  }).join('');
+}
+
+async function submitComment() {
+  const sess = getSess();
+  if (!sess) {
+    toast('<span style="color:var(--red)">✕ Session error. Please re-enter the site.</span>');
+    return;
+  }
+
+  const body = document.getElementById('comment-body-input').value.trim();
+  if (!body) {
+    toast('<span style="color:var(--red)">✕ Comment cannot be empty.</span>');
+    return;
+  }
+  if (body.length > 500) {
+    toast('<span style="color:var(--red)">✕ Comment exceeds 500 characters.</span>');
+    return;
+  }
+
+  // Double-check localStorage to prevent race-condition double-submit
+  if (localStorage.getItem(LS_COMMENT_KEY)) {
+    toast('<span style="color:var(--amber)">You have already left your comment.</span>');
+    return;
+  }
+
+  const btn = document.getElementById('comment-submit-btn');
+  btn.disabled = true;
+  btn.textContent = 'Saving...';
+
+  const rec = {
+    visitor_name:  sess.name,
+    visitor_email: sess.email,
+    body,
+    ts: Date.now(),
+  };
+
+  const result = await dbAddComment(rec);
+
+  if (result.duplicate) {
+    localStorage.setItem(LS_COMMENT_KEY, body);
+    document.getElementById('comment-input-box').style.display   = 'none';
+    document.getElementById('comment-already-box').style.display = 'block';
+    document.getElementById('comment-already-text').textContent  = body;
+    toast('<span style="color:var(--amber)">You have already left your comment.</span>');
+    return;
+  }
+
+  if (!result.ok) {
+    btn.disabled = false;
+    btn.textContent = 'LEAVE YOUR MARK →';
+    toast('<span style="color:var(--red)">✕ Could not save. Please try again.</span>');
+    return;
+  }
+
+  // Success — lock permanently via localStorage
+  localStorage.setItem(LS_COMMENT_KEY, body);
+  document.getElementById('comment-input-box').style.display   = 'none';
+  document.getElementById('comment-already-box').style.display = 'block';
+  document.getElementById('comment-already-text').textContent  = body;
+  toast('<span class="ok">✓ Comment saved.</span> Permanently on the record.', 4000);
+  await loadComments();
+}
+
+async function refreshAdminComments() {
+  const list = document.getElementById('admin-comment-list');
+  list.innerHTML = '<div class="comments-empty">Loading...</div>';
+  const comments = await dbGetAllCommentsAdmin();
+
+  if (!comments.length) {
+    list.innerHTML = '<div class="comments-empty">No comments yet.</div>';
+    return;
+  }
+
+  list.innerHTML = comments.map(c => `
+    <div class="comment-admin-row">
+      <div class="car-header">
+        <span class="car-name">${esc(c.visitor_name)}</span>
+        <span class="car-meta">${esc(c.visitor_email)} · ${c.ts ? new Date(c.ts).toLocaleString() : '—'}</span>
+      </div>
+      <div class="car-body">${esc(c.body)}</div>
+      <button class="req-mark-btn" style="margin-top:8px;color:var(--red);" onclick="adminDeleteComment('${esc(c.id)}','${esc(c.visitor_name)}')">Delete →</button>
+    </div>`).join('');
+}
+
+async function adminDeleteComment(id, name) {
+  if (!confirm(`Delete comment from "${name}"? This cannot be undone.`)) return;
+  try {
+    await dbDeleteComment(id);
+    toast('<span style="color:var(--red)">Comment deleted.</span>');
+    await refreshAdminComments();
+  } catch (e) {
+    toast(`<span style="color:var(--red)">✕ ${esc(e.message)}</span>`);
+  }
+}
+
 
 init();
