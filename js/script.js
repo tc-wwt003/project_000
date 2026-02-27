@@ -1199,6 +1199,3 @@ async function adminDeleteComment(id, name) {
 
 
 init();
-
-
-
