@@ -1,7 +1,7 @@
 'use strict';
 
 const SUPABASE_URL = 'https://uyueojhfvotwyhjrgmme.supabase.co';
-const SUPABASE_KEY = 'sb_publishable_L0mn2hLBol3uC-a7pqWnxQ_3Uwz80Ro';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InV5dWVvamhmdm90d3loanJnbW1lIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIxMjEwMTIsImV4cCI6MjA4NzY5NzAxMn0.509kaW2qTkkDEtZ4pbCxWIXxSf1DwH9DVOZLYU7d0rM';
 const EDGE_FN_URL  = 'https://uyueojhfvotwyhjrgmme.supabase.co/functions/v1/send-access-request';
 
 const VISITOR_PW_DEFAULT = 'portfolio2025';
@@ -1199,4 +1199,5 @@ async function adminDeleteComment(id, name) {
 
 
 init();
+
 
