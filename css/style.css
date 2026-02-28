@@ -14,6 +14,7 @@
 --orange:#ff6a2f;
 --green:#39ff8a;
 --red:#ff3355;
+--rred: #ff002b;
 --scan:rgba(0,212,255,.015);
 --amber:#ffb020;
 --yellow:#FFFF00;
@@ -1146,15 +1147,16 @@ color:var(--cyan);
 border:1px solid var(--cyan-mid);
 }
 
+/*  Working Here     ________________________________________X________________________   */
 .cert-status.inactive{
-  background:rgba(238, 255, 0, 0.308);
-  color:var(--green);
+  background:rgba(238, 255, 0, 0.144);
+  color:var(--yellow);
   border:1px solid rgba(57,255,138,.25);
 }
 
 .cert-status.expired{
-  background:rgba(255, 40, 40, 0.219);
-  color:var(--cyan);
+  background:rgba(255, 54, 54, 0.123);
+  color:var(--rred);
   border:1px solid var(--cyan-mid);
 }
 
@@ -3036,4 +3038,3 @@ grid-template-columns:1fr;
 display:none;
 }
 }
-
