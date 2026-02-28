@@ -16,6 +16,7 @@
 --red:#ff3355;
 --scan:rgba(0,212,255,.015);
 --amber:#ffb020;
+--yellow:#FFFF00;
 }
 
 *{
@@ -1143,6 +1144,18 @@ border:1px solid rgba(57,255,138,.25);
 background:rgba(0,212,255,.08);
 color:var(--cyan);
 border:1px solid var(--cyan-mid);
+}
+
+.cert-status.inactive{
+  background:rgba(238, 255, 0, 0.308);
+  color:var(--green);
+  border:1px solid rgba(57,255,138,.25);
+}
+
+.cert-status.expired{
+  background:rgba(255, 40, 40, 0.219);
+  color:var(--cyan);
+  border:1px solid var(--cyan-mid);
 }
 
 .hero-metrics{
@@ -3023,3 +3036,4 @@ grid-template-columns:1fr;
 display:none;
 }
 }
+
