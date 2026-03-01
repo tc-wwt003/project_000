@@ -1,4 +1,3 @@
-/*portfolioNAV*/
 :root{
 --bg:#070a0f;
 --bg2:#0c1018;
@@ -243,6 +242,7 @@ caret-color:var(--cyan);
 transition:border-color .2s,box-shadow .2s;
 border-radius:0;
 -webkit-appearance:none;
+appearance: none;
 }
 
 .pw-input::placeholder{
@@ -378,6 +378,7 @@ outline:none;
 transition:border-color .2s;
 border-radius:0;
 -webkit-appearance:none;
+appearance: none;
 }
 
 .vf-input::placeholder{
@@ -579,6 +580,7 @@ min-height:120px;
 max-height:300px;
 border-radius:0;
 -webkit-appearance:none;
+appearance: none;
 line-height:1.7;
 letter-spacing:.02em;
 }
@@ -2385,6 +2387,7 @@ outline:none;
 transition:border-color .2s,box-shadow .2s;
 border-radius:0;
 -webkit-appearance:none;
+appearance: none;
 width:100%;
 }
 
@@ -2637,6 +2640,7 @@ outline:none;
 transition:border-color .2s;
 border-radius:0;
 -webkit-appearance:none;
+appearance: none;
 }
 
 .ag-field input:focus{
